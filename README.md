@@ -19,7 +19,7 @@ If you you are not familiar with heroku, please see https://heroku.com.
 
 ## Running locally 
 
-This assumes some local memcache instance running.
+This assumes some local memcache instance running. For more information, see https://devcenter.heroku.com/articles/memcachier#local-usage .
 
 ```
 npm install
