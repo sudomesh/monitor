@@ -68,7 +68,7 @@ Foreman is an app that ships with the heroku cli and is used to simulate the sta
 
 Check whether your app launch properly by going to https://localhost:3000 in your favorite browser.
 
-By default, you should see a notification that the exit node is down. To simulate exit node activity, open a commandline in the monitor directory and execute ''```nodejs ./simulate-activity.js```
+By default, you should see a notification that the exit node is down. To simulate exit node activity, open a commandline in the monitor directory and execute ```nodejs ./simulate-activity.js```. This script sets a key-value pair on memcache in such a way that the monitor page gets all like "hey, this exit node is alive!"
 
 After running this, reload your local monitor page and the page should indicate that the exit monitor is up. After 2 minutes, this is no longer the case, because the activity metrics expire.
 
