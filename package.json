@@ -1,19 +1,18 @@
 {
-  "name": "MemCachier-Node.js-Example-App",
-  "version": "1.0.0",
+  "name": "A Peoples Open Network Monitor",
+  "version": "0.0.1",
   "description": "Node.js app using express framework illustrating how to use MemCachier to cache computations",
-  "author": "David Terei <code@davidterei.com>",
-  "private": true,
+  "author": "Sudo Mesh <info@sudomesh.org>",
   "license": "MIT",
   "scripts": {
     "start": "node ./bin/www"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/memcachier/examples-node"
+    "url": "https://github.com/sudomesh/monitor"
   },
   "bugs": {
-    "url": "https://github.com/dterei/examples-node/issues"
+    "url": "https://github.com/sudomesh/monitor/issues"
   },
   "dependencies": {
     "express": "~3.4.8",
