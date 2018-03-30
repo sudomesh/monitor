@@ -25,9 +25,7 @@ Step-by-step guide.
 
 ```sudo apt-get install memcached``` 
 
-1. install the heroku cli (see https://devcenter.heroku.com/articles/heroku-cli)
-
-2. check whether you installed the heroku cli correctly
+1. install the heroku cli (see https://devcenter.heroku.com/articles/heroku-cli). To check whether you installed the heroku cli correctly
 
 Run ```heroku --version``` . Expected results is something like:
 
@@ -35,6 +33,8 @@ Run ```heroku --version``` . Expected results is something like:
 $ heroku --version
 heroku-cli/6.11.17 (linux-x64) node-v7.10.0
 ```
+
+2. install foreman using ```gem install foreman``` (also see https://github.com/ddollar/foreman).
 
 3. clone this repository
 
