@@ -44,21 +44,31 @@ var exitnodes = ['45.34.140.42'];
 var isAlive = function(req, res) {
   var numberOfGateways = req.query.numberOfGateways || 'n/a';
   var numberOfRoutes = req.query.numberOfRoutes || 'n/a';
-  mjs.set('alive', 'Yes! Connecting [' + numberOfRoutes + '] nodes via [' + numberOfGateways + '] gateways.', {expires:120}, function(err) {
+
+  var handleErr = function(err) {
     if (err) {
+
       console.log("Error setting key: " + err);
+
       res.render('error', {
         message: err.message,
         error: err
       });
     } 
-  });
+  };
+
+  var msg = `Yes! Connecting [${numberOfRoutes}] nodes via [${numberOfGateways}] gateways.`
+  mjs.set('alive', msg, {expires:120}, handleErr);
+  var jsonResults = {numberOfGateways: numberOfGateways, numberOfRoutes: numberOfRoutes};
+  mjs.set('alivejson', JSON.stringify(jsonResults), {expires: 120}, handleErr);
 }
 
 // Routes
 app.get('/', function(req, res) {
   var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
   console.log('from [' + ip + ']');
+
   if (exitnodes.includes(ip)) {
     console.log('ip is an exitnode');
     isAlive(req, res);  
@@ -68,6 +78,16 @@ app.get('/', function(req, res) {
       res.render('index', {value: v.toString()});
     } else {
       res.render('index', {value: 'No, the exit node has not checked in the last 2 minutes.'});
+    }
+  });
+});
+
+app.get('/api/monitor', function(req, res) {
+  mjs.get('alivejson', function(err, v) {
+    if (v) {
+      res.json(JSON.parse(v));
+    } else {
+      res.json({error: 'No, the exit node has not checked in the last 2 minutes.'});
     }
   });
 });
