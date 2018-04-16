@@ -85,7 +85,9 @@ app.get('/', function(req, res) {
 app.get('/api/monitor', function(req, res) {
   mjs.get('alivejson', function(err, v) {
     if (v) {
-      res.json(JSON.parse(v));
+      let data = JSON.parse(v);
+      Object.entries(data).map(arr => { data[arr[0]] = Number(arr[1]); });
+      res.json(data);
     } else {
       res.json({error: 'No, the exit node has not checked in the last 2 minutes.'});
     }
