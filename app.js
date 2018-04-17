@@ -59,7 +59,10 @@ var isAlive = function(req, res) {
 
   var msg = `Yes! Connecting [${numberOfRoutes}] nodes via [${numberOfGateways}] gateways.`
   mjs.set('alive', msg, {expires:120}, handleErr);
-  var jsonResults = {numberOfGateways: numberOfGateways, numberOfRoutes: numberOfRoutes};
+  var jsonResults = {
+    numberOfGateways: Number(numberOfGateways),
+    numberOfRoutes: Number(numberOfRoutes)
+  };
   mjs.set('alivejson', JSON.stringify(jsonResults), {expires: 120}, handleErr);
 }
 
@@ -86,7 +89,6 @@ app.get('/api/monitor', function(req, res) {
   mjs.get('alivejson', function(err, v) {
     if (v) {
       let data = JSON.parse(v);
-      Object.entries(data).map(arr => { data[arr[0]] = Number(arr[1]); });
       res.json(data);
     } else {
       res.json({error: 'No, the exit node has not checked in the last 2 minutes.'});
