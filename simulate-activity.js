@@ -1,15 +1,23 @@
-var memjs = require('memjs');
-var mc = memjs.Client.create();
+var request = require('request');
+var env = require('node-env-file');
 
-var numberOfRoutes = 12;
-var numberOfGateways = 5;
+env(__dirname + '/.env');
 
-mc.set('alive', 'Yes! Connecting [' + numberOfRoutes + '] nodes via [' + numberOfGateways + '] gateways.', {expires:120}, function(err) {
-    if (err) {
-       console.log("Error setting key: " + err);
-    } else {
-       console.log("successfully set key");
-    }
+var exitnodeIp = '45.34.140.42';
+var options = {
+  url: `http://localhost:${process.env.PORT}?numberOfGateways=15&numberOfRoutes=21`,
+  // the server authenticates the request by looking at
+  // its source ip or x-forwarded-for header
+  headers: {
+    'x-forwarded-for': exitnodeIp
+  }
+};
+
+console.log(`GET ${options.url}`);
+request(options, (error, response) => {
+  if (!error && response.statusCode == 200) {
+    console.log('success');
+  } else {
+    console.log(error);
+  }
 });
-
-

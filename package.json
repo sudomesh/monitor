@@ -22,5 +22,9 @@
     "less-middleware": "0.1.15",
     "winston": "0.7.3",
     "memjs": "1.1.0"
+  },
+  "devDependencies": {
+    "node-env-file": "0.1.8",
+    "request": "2.85.0"
   }
 }
