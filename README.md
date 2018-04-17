@@ -17,6 +17,13 @@ heroku addons:create memcachier:dev
 
 If you you are not familiar with heroku, please see https://heroku.com.
 
+To install the heroku cli, see https://devcenter.heroku.com/articles/heroku-cli. To check whether you installed the heroku cli correctly, run `heroku --version`. Expected results is something like:
+
+```
+$ heroku --version
+heroku-cli/6.11.17 (linux-x64) node-v7.10.0
+```
+
 ## Running locally 
 
 Step-by-step guide.
@@ -25,18 +32,9 @@ Step-by-step guide.
 
 ```sudo apt-get install memcached``` 
 
-1. install the heroku cli (see https://devcenter.heroku.com/articles/heroku-cli). To check whether you installed the heroku cli correctly
+1. install foreman using ```gem install foreman``` (also see https://github.com/ddollar/foreman).
 
-Run ```heroku --version``` . Expected results is something like:
-
-```
-$ heroku --version
-heroku-cli/6.11.17 (linux-x64) node-v7.10.0
-```
-
-2. install foreman using ```gem install foreman``` (also see https://github.com/ddollar/foreman).
-
-3. clone this repository
+2. clone this repository
 
 Open a terminal, install git and clone this repository using:
 
@@ -48,19 +46,19 @@ cd monitor
 
 This should create a new directory called ```monitor``` in your projects directory.
 
-4. install node dependencies 
+3. install node dependencies 
 
 run ```npm install``` to install node dependencies.
 
-5. copy some configuration files
+4. copy some configuration files
 
 ```cp prod.env .env```
 
-6. start memcached
+5. start memcached
 
 ```memcached -v```
 
-7. launch the app locally using foreman
+6. launch the app locally using foreman
 
 Foreman is an app that ships with the heroku cli and is used to simulate the start of a heroku dyno. Essentially, it is a startup script.
 
