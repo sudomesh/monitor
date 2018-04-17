@@ -85,7 +85,7 @@ app.get('/', function(req, res) {
   });
 });
 
-app.get('/api/monitor', function(req, res) {
+app.get('/api/v0/monitor', function(req, res) {
   mjs.get('alivejson', function(err, v) {
     if (v) {
       let data = JSON.parse(v);
