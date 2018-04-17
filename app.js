@@ -42,8 +42,8 @@ winston.add(winston.transports.File, { filename: logFile });
 var exitnodes = ['45.34.140.42'];
 
 var isAlive = function(req, res) {
-  var numberOfGateways = req.query.numberOfGateways || 'n/a';
-  var numberOfRoutes = req.query.numberOfRoutes || 'n/a';
+  var gateways = req.query.numberOfGateways || 'n/a';
+  var routes = req.query.numberOfRoutes || 'n/a';
 
   var handleErr = function(err) {
     if (err) {
@@ -57,11 +57,9 @@ var isAlive = function(req, res) {
     } 
   };
 
-  var msg = `Yes! Connecting [${numberOfRoutes}] nodes via [${numberOfGateways}] gateways.`
-  mjs.set('alive', msg, {expires:120}, handleErr);
   var jsonResults = {
-    numberOfGateways: Number(numberOfGateways),
-    numberOfRoutes: Number(numberOfRoutes)
+    numberOfGateways: gateways === "n/a" ? gateways : Number(gateways),
+    numberOfRoutes: routes === "n/a" ? routes : Number(routes)
   };
   mjs.set('alivejson', JSON.stringify(jsonResults), {expires: 120}, handleErr);
 }
@@ -76,9 +74,11 @@ app.get('/', function(req, res) {
     console.log('ip is an exitnode');
     isAlive(req, res);  
   }
-  mjs.get('alive', function(err, v) {
+  mjs.get('alivejson', function(err, v) {
     if (v) {
-      res.render('index', {value: v.toString()});
+      let d = JSON.parse(v);
+      let msg = `Yes! Connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
+      res.render('index', {value: msg});
     } else {
       res.render('index', {value: 'No, the exit node has not checked in the last 2 minutes.'});
     }
