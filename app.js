@@ -43,35 +43,35 @@ winston.add(winston.transports.File, { filename: logFile });
 let exitnodes = ['45.34.140.42'];
 
 /**
- * Process incoming request and update memcache. Renders an error if necessary.
+ * Process incoming request and update memcache. Returns an error if necessary.
  */
 let updateCache = function(req, res) {
+  let processed = util.processUpdate(req);
+  if (processed.error) {
+    // Couldn't get the data needed to process request => 400 - Bad Request
+    return res.status(400).json(processed);
+  }
+
   let handleErr = function(err) {
     if (err) {
       console.log("Error setting key: " + err);
-      res.render('error', {
-        message: err.message,
-        error: err
-      });
+      return res.status(502).json({ error: 'Could not set key' });
     } 
+    return res.json({ message: 'Set attached values', result: processed });
   };
-  let s = util.processUpdate(req);
-  mjs.set('alivejson', s, {expires: 120}, handleErr);
-}
+  mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+};
 
 // Routes
 app.get('/', function(req, res) {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  console.log('from [' + ip + ']');
 
-  //TODO Move this to a POST handler
-  if (exitnodes.includes(ip)) {
-    console.log('ip is an exitnode');
-    updateCache(req, res);  
-  }
   mjs.get('alivejson', function(err, v) {
     //TODO Handle the error!
     let msg = util.messageFromCacheData(v);
+    //TODO Might make sense to do
+    // if (msg.error) { res.status(404); }
+    // ...but the issue isn't that the client specified a bad URI, so...
     res.render('index', {value: msg});
   });
 });
@@ -82,6 +82,18 @@ app.get('/api/v0/monitor', function(req, res) {
     let j = util.jsonFromCacheData(v);
     res.json(j);
   });
+});
+
+app.post('/api/v0/monitor', function(req, res) {
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  if (exitnodes.includes(ip)) {
+    console.log('Received update from exit node ' + ip);
+    updateCache(req, res);  
+  } else {
+    console.log('Received update from unfamiliar IP: ' + ip);
+    return res.status(403).json({ error: "You aren't an exit node." });
+  }
 });
 
 /// Error Handlers

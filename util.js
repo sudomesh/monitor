@@ -1,34 +1,32 @@
 const noCheckInMessage = 'No, the exit node has not checked in during the last 2 minutes.';
+
 /**
  * Compute cache value from update data pushed from exit node.
  */
 module.exports.processUpdate = function(req) {
+  let gateways = nonzeroOrNA(req.body.numberOfGateways);
+  let routes = nonzeroOrNA(req.body.numberOfRoutes);
+  if (gateways === 'n/a' || routes === 'n/a') {
+    return { error: 'Bad request' };
+  }
   let jsonResults = {
-    numberOfGateways: processParameter(req.query.numberOfGateways),
-    numberOfRoutes: processParameter(req.query.numberOfRoutes)
+    numberOfGateways: nonzeroOrNA(req.body.numberOfGateways),
+    numberOfRoutes: nonzeroOrNA(req.body.numberOfRoutes)
   };
-  return JSON.stringify(jsonResults);
+  return jsonResults;
 }
 
 /**
- * Process query strings into numbers, defaulting to "n/a".
+ * Returns n/a for any input that isn't a nonnegative number, otherwise returns the number.
  */
-module.exports.processParameter = function(s) {
-  let na = 'n/a';
-
-  if (s === null) {
-    return na;
+let nonzeroOrNA = function(n) {
+  if (typeof n == 'number' && n >= 0) {
+    return n;
   }
-  if (s.match('0+')) {
-    return 0;
-  }
-
-  let n = Number(s);
-  if (isNaN(n) || n <= 0) {
-    return na;
-  }
-  return n;
+  return 'n/a';
 }
+
+module.exports.processParameter = nonzeroOrNA;
 
 /**
  * Computes message for Jade template from data returned from memcache.
@@ -53,6 +51,6 @@ module.exports.jsonFromCacheData = function(v) {
     //TODO What happens when parse fails?
     return JSON.parse(v);
   } else {
-    return noCheckInMessage;
+    return { error: noCheckInMessage };
   }
 }
