@@ -102,8 +102,9 @@ app.post('/routing-table', (req, res) => {
   for(let i = 0; i < lineArray.length; i++){
     let nodeArray = lineArray[i].split(',');
     let nodeObj = {
-      nodeIP: nodeArray[0],
-      gatewayIP: nodeArray[1]
+      "timestamp": new Date(),
+      "nodeIP": nodeArray[0],
+      "gatewayIP": nodeArray[1]
     };
     resultArray.push(nodeObj);
   }
