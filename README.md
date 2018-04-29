@@ -24,6 +24,14 @@ $ heroku --version
 heroku-cli/6.11.17 (linux-x64) node-v7.10.0
 ```
 
+To push to current production server, get access push access and add the following to .git/config:
+
+```
+[remote "heroku"]
+url = https://git.heroku.com/peoplesopen.git
+fetch = +refs/heads/*:refs/remotes/heroku/*
+```
+
 ## Running locally 
 
 Step-by-step guide.
