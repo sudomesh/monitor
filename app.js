@@ -98,12 +98,13 @@ app.get('/api/v0/monitor', function(req, res) {
 
 app.post('/routing-table', (req, res) => {
   console.log('Route Worked');
-  req.setEncoding('utf8');
-  res.locals.rawBody = '';
-  req.on(data, (chunk) => {
-    res.locals.rawBody += chunk;
-  });
-  req.on('end', () => { console.log(res.locals.rawBody) })
+  console.log(req);
+  // req.setEncoding('utf8');
+  // res.locals.rawBody = '';
+  // req.on(data, (chunk) => {
+  //   res.locals.rawBody += chunk;
+  // });
+  // req.on('end', () => { console.log(res.locals.rawBody) })
 });
 
 /// Error Handlers
