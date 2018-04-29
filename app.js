@@ -98,6 +98,7 @@ app.get('/api/v0/monitor', function(req, res) {
 
 app.post('/routing-table', parseText, (req, res) => {
   let routingTableText = res.locals.rawBody;
+  console.log('ROUTING TABLE OUTPUT:');
   console.log(routingTableText);
 });
 
