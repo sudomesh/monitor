@@ -97,18 +97,20 @@ app.get('/api/v0/monitor', function(req, res) {
 });
 
 app.post('/routing-table', (req, res) => {
-  console.log('Route Worked:');
-  console.log(JSON.stringify(req.body, null, "  "));
+  let lineArray = req.body.split("|");
+  resultArray = [];
+  for(let i = 0; i < lineArray.length; i++){
+    let nodeArray = lineArray[i].split('\T');
+    let nodeObj = {
+      nodeIP: nodeArray[0],
+      gatewayIP: nodeArray[1]
+    };
+    resultArray.push(nodeObj);
+  }
   res.json({
     "message": "It Worked!",
-    "data": req.body
+    "data": resultArray
   });
-  // req.setEncoding('utf8');
-  // res.locals.rawBody = '';
-  // req.on(data, (chunk) => {
-  //   res.locals.rawBody += chunk;
-  // });
-  // req.on('end', () => { console.log(res.locals.rawBody) })
 });
 
 /// Error Handlers
