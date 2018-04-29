@@ -97,9 +97,12 @@ app.get('/api/v0/monitor', function(req, res) {
 });
 
 app.post('/routing-table', (req, res) => {
-  console.log('Route Worked');
-  console.log(req);
-  res.json({"message": "Example Response"});
+  console.log('Route Worked:');
+  console.log(JSON.stringify(req.body, null, "  "));
+  res.json({
+    "message": "It Worked!",
+    "data": req.body
+  });
   // req.setEncoding('utf8');
   // res.locals.rawBody = '';
   // req.on(data, (chunk) => {
