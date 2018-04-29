@@ -100,7 +100,7 @@ app.post('/routing-table', (req, res) => {
   let lineArray = req.body.split("|");
   resultArray = [];
   for(let i = 0; i < lineArray.length; i++){
-    let nodeArray = lineArray[i].split('\T');
+    let nodeArray = lineArray[i].split(',');
     let nodeObj = {
       nodeIP: nodeArray[0],
       gatewayIP: nodeArray[1]
