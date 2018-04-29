@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ip route | curl --silent -H "Content-Type: text" -d @- -X POST https://peoplesopen.herokuapp.com/routing-table > /dev/null 
+ip route | grep via | grep -v default | awk '{print $1 "\t" $3  }' | sort | uniq | tr '\n' '|' | curl -H 'text/plain' --data @- -X POST https://peoplesopen.herokuapp.com/routing-table  
