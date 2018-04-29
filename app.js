@@ -98,7 +98,7 @@ app.get('/api/v0/monitor', function(req, res) {
 
 app.post('/routing-table', (req, res) => {
   let lineArray = req.body.split("|");
-  resultArray = [];
+  let resultArray = [];
   for(let i = 0; i < lineArray.length; i++){
     let nodeArray = lineArray[i].split(',');
     let nodeObj = {
