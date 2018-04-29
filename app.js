@@ -96,6 +96,11 @@ app.get('/api/v0/monitor', function(req, res) {
   });
 });
 
+app.post('/routing-table', parseText, (req, res) => {
+  let routingTableText = res.locals.rawBody;
+  console.log(routingTableText);
+});
+
 /// Error Handlers
 
 // development error handler
@@ -112,10 +117,23 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
+// Middleware
+
+
 module.exports = app;
+
+
+function parseText(req, res, next) {
+  req.setEncoding('utf8');
+  res.locals.rawBody = '';
+  req.on(data, (chunk) => {
+    res.locals.rawBody += chunk;
+  });
+  req.on('end', () => { return next(); })
+}
