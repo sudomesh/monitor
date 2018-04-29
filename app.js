@@ -96,10 +96,13 @@ app.get('/api/v0/monitor', function(req, res) {
   });
 });
 
-app.post('/routing-table', parseText, (req, res) => {
-  let routingTableText = res.locals.rawBody;
-  console.log('ROUTING TABLE OUTPUT:');
-  console.log(routingTableText);
+app.post('/routing-table', (req, res) => {
+  req.setEncoding('utf8');
+  res.locals.rawBody = '';
+  req.on(data, (chunk) => {
+    res.locals.rawBody += chunk;
+  });
+  req.on('end', () => { console.log(res.locals.rawBody) })
 });
 
 /// Error Handlers
@@ -129,12 +132,3 @@ app.use(function(err, req, res, next) {
 
 module.exports = app;
 
-
-function parseText(req, res, next) {
-  req.setEncoding('utf8');
-  res.locals.rawBody = '';
-  req.on(data, (chunk) => {
-    res.locals.rawBody += chunk;
-  });
-  req.on('end', () => { return next(); })
-}
