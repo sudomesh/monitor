@@ -1,37 +1,20 @@
-// Node.js + Express MemCachier Example
-// Author: MemCachier Inc.
-// License: MIT
+var express = require('express');
+var logger = require('morgan');
+var path = require('path');
+var winston = require('winston');
+var memjs = require('memjs').Client;
+var util = require('./util');
 
-/*jshint node: true */
-/*jslint unparam: true*/
-
-// Douglas Crockford is wrong, synchronous at startup makes sense.
-/*jslint stupid: true*/
-
-// Dependencies
-const express = require('express'),
-    logger = require('morgan'),
-    path = require('path'),
-    winston = require('winston'),
-    memjs = require('memjs').Client,
-    util = require('./util');
-
-// Constants / Configuration
 const logFile = 'nodejs.log';
 const mjs = memjs.create();
 
-// Start Express
-let app = express();
-app.configure(function () {
-  app.use(express.urlencoded());
-  app.use(express.json());
-});
+var app = express();
+app.use(express.urlencoded());
+app.use(express.json());
 
-// View Engine Setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Middleware Setup
 app.use(logger('dev'));
 app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -40,19 +23,9 @@ app.use(app.router);
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
-let exitnodes = ['45.34.140.42'];
-
-/**
- * Process incoming request and update memcache. Returns an error if necessary.
- */
-let updateCache = function(req, res) {
-  let processed = util.processUpdate(req);
-  if (processed.error) {
-    // Couldn't get the data needed to process request => 400 - Bad Request
-    return res.status(400).json(processed);
-  }
-
-  let handleErr = function(err) {
+const exitnodes = ['45.34.140.42'];
+  
+let handleErr = function(err) {
     if (err) {
       console.log("Error setting key: " + err);
       return res.status(502).json({ error: 'Could not set key' });
@@ -62,7 +35,17 @@ let updateCache = function(req, res) {
   mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
 };
 
-// Routes
+/**
+ * Process incoming request and update memcache. Returns an error if necessary.
+ */
+var updateCache = function(req, res) {
+  let processed = util.processUpdate(req);
+  if (processed.error) {
+    // Couldn't get the data needed to process request => 400 - Bad Request
+    return res.status(400).json(processed);
+  }
+};
+
 app.get('/', function(req, res) {
   let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
@@ -94,6 +77,44 @@ app.post('/api/v0/monitor', function(req, res) {
     console.log('Received update from unfamiliar IP: ' + ip);
     return res.status(403).json({ error: "You aren't an exit node." });
   }
+
+app.get('/api/v0/nodes', function(req, res) {
+  mjs.get('nodes', function(err, v) {
+    if (v) {
+      let data = JSON.parse(v);
+      res.json(data);
+    } else {
+      res.json({error: 'failed to retrieve node information'});
+    }
+  });
+});
+
+
+app.post('/routing-table', (req, res) => {
+  let str = Object.keys(req.body)[0];
+  // console.log("Request Body:");
+  // console.log(str);
+  let lineArray = str.split("|");
+  console.log(JSON.stringify(lineArray));
+  let resultArray = [];
+  for(let i = 0; i < lineArray.length; i++){
+    console.log(`Processing line ${i + 1}`);
+    let nodeArray = lineArray[i].split(',');
+    let nodeObj = {
+      "timestamp": new Date(),
+      "nodeIP": nodeArray[0],
+      "gatewayIP": nodeArray[1]
+    };
+    console.log(`Line ${i + 1} Object` + nodeObj);
+    resultArray.push(nodeObj);
+  }
+  // console.log('Result Array: ' + resultArray);
+  mjs.set('nodes', JSON.stringify(resultArray), {}, handleErr);
+
+  res.json({
+    "message": "It Worked!",
+    "data": resultArray
+  });
 });
 
 /// Error Handlers
@@ -112,10 +133,11 @@ if (app.get('env') === 'development') {
 // production error handler
 // no stacktraces leaked to user
 app.use(function(err, req, res, next) {
-    res.render('error', {
-        message: err.message,
-        error: {}
-    });
+  res.render('error', {
+    message: err.message,
+    error: {}
+  });
 });
 
 module.exports = app;
+
