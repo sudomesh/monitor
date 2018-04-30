@@ -47,7 +47,7 @@ var updateCache = function(req, res) {
 };
 
 app.get('/', function(req, res) {
-  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
   mjs.get('alivejson', function(err, v) {
     //TODO Handle the error!

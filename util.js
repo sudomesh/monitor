@@ -1,32 +1,32 @@
 const noCheckInMessage = 'No, the exit node has not checked in during the last 2 minutes.';
 
 /**
+ * Returns n/a for any input that isn't a nonnegative number, otherwise returns the number.
+ */
+var nonZeroOrNA = function(n) {
+    return (n && (n * 1) >= 0) ? n * 1 : 'n/a';
+};
+
+/**
  * Compute cache value from update data pushed from exit node.
  */
 module.exports.processUpdate = function(req) {
-  let gateways = nonzeroOrNA(req.body.numberOfGateways);
-  let routes = nonzeroOrNA(req.body.numberOfRoutes);
+  var gateways = nonZeroOrNA(req.body.numberOfGateways);
+  var routes = nonZeroOrNA(req.body.numberOfRoutes);
   if (gateways === 'n/a' || routes === 'n/a') {
     return { error: 'Bad request' };
+  } else {
+    return {
+      numberOfGateways: nonZeroOrNA(req.body.numberOfGateways),
+      numberOfRoutes: nonZeroOrNA(req.body.numberOfRoutes)
+    };
   }
-  let jsonResults = {
-    numberOfGateways: nonzeroOrNA(req.body.numberOfGateways),
-    numberOfRoutes: nonzeroOrNA(req.body.numberOfRoutes)
-  };
-  return jsonResults;
-}
+};
 
-/**
- * Returns n/a for any input that isn't a nonnegative number, otherwise returns the number.
- */
-let nonzeroOrNA = function(n) {
-  if (typeof n == 'number' && n >= 0) {
-    return n;
-  }
-  return 'n/a';
-}
 
-module.exports.processParameter = nonzeroOrNA;
+module.exports.processParameter = nonZeroOrNA
+
+
 
 /**
  * Computes message for Jade template from data returned from memcache.
