@@ -97,7 +97,7 @@ app.get('/api/v0/monitor', function(req, res) {
 });
 
 app.post('/routing-table', (req, res) => {
-  let str = req.body;
+  let str = Object.keys(req.body)[0];
   console.log("Request Body:");
   console.log(str);
   // let lineArray = str.split("|");
