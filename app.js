@@ -21,10 +21,10 @@ var mjs = memjs.create();
 
 // Start Express
 var app = express();
-app.configure(function () {
-  app.use(express.urlencoded());
-  app.use(express.json());
-});
+
+app.use(express.urlencoded());
+app.use(express.json());
+
 
 // View Engine Setup
 app.set('views', path.join(__dirname, 'views'));
@@ -97,8 +97,9 @@ app.get('/api/v0/monitor', function(req, res) {
 });
 
 app.post('/routing-table', (req, res) => {
-  let lineArray = req.body.split("|");
-  console.log("Input:\n" + lineArray);
+  let str = req.body;
+  let lineArray = str.split("|");
+  console.log(JSON.stringify(lineArray));
   let resultArray = [];
   for(let i = 0; i < lineArray.length; i++){
     console.log(`Processing line ${i + 1}`);
