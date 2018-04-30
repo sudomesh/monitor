@@ -8,6 +8,10 @@ Uses memcache/memjs and is supposed to run on heroku.
 
 Leaves much room for improvement ;) 
 
+## Running tests
+
+To run tests, first install jasmine using ```npm install jasmine -g```. Then, you can run the tests using ```npm test```.
+
 ## Deploy to Heroku
 
 Make sure to enable the memcachier addon. 
