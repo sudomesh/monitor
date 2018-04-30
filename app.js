@@ -40,22 +40,23 @@ app.use(app.router);
 winston.add(winston.transports.File, { filename: logFile });
 
 var exitnodes = ['45.34.140.42'];
+  
+var handleErr = function(err) {
+  if (err) {
+
+    console.log("Error setting key: " + err);
+
+    res.render('error', {
+      message: err.message,
+      error: err
+    });
+  } 
+};
 
 var isAlive = function(req, res) {
   var gateways = req.query.numberOfGateways || 'n/a';
   var routes = req.query.numberOfRoutes || 'n/a';
 
-  var handleErr = function(err) {
-    if (err) {
-
-      console.log("Error setting key: " + err);
-
-      res.render('error', {
-        message: err.message,
-        error: err
-      });
-    } 
-  };
 
   var jsonResults = {
     numberOfGateways: gateways === "n/a" ? gateways : Number(gateways),
@@ -96,6 +97,18 @@ app.get('/api/v0/monitor', function(req, res) {
   });
 });
 
+app.get('/api/v0/nodes', function(req, res) {
+  mjs.get('nodes', function(err, v) {
+    if (v) {
+      let data = JSON.parse(v);
+      res.json(data);
+    } else {
+      res.json({error: 'failed to retrieve node information'});
+    }
+  });
+});
+
+
 app.post('/routing-table', (req, res) => {
   let str = Object.keys(req.body)[0];
   // console.log("Request Body:");
@@ -115,6 +128,8 @@ app.post('/routing-table', (req, res) => {
     resultArray.push(nodeObj);
   }
   // console.log('Result Array: ' + resultArray);
+  mjs.set('nodes', JSON.stringify(resultArray), {}, handleErr);
+
   res.json({
     "message": "It Worked!",
     "data": resultArray
