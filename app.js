@@ -98,26 +98,26 @@ app.get('/api/v0/monitor', function(req, res) {
 
 app.post('/routing-table', (req, res) => {
   let str = Object.keys(req.body)[0];
-  console.log("Request Body:");
-  console.log(str);
-  // let lineArray = str.split("|");
-  // console.log(JSON.stringify(lineArray));
-  // let resultArray = [];
-  // for(let i = 0; i < lineArray.length; i++){
-  //   console.log(`Processing line ${i + 1}`);
-  //   let nodeArray = lineArray[i].split(',');
-  //   let nodeObj = {
-  //     "timestamp": new Date(),
-  //     "nodeIP": nodeArray[0],
-  //     "gatewayIP": nodeArray[1]
-  //   };
-  //   console.log(`Line ${i + 1} Object` + nodeObj);
-  //   resultArray.push(nodeObj);
-  // }
+  // console.log("Request Body:");
+  // console.log(str);
+  let lineArray = str.split("|");
+  console.log(JSON.stringify(lineArray));
+  let resultArray = [];
+  for(let i = 0; i < lineArray.length; i++){
+    console.log(`Processing line ${i + 1}`);
+    let nodeArray = lineArray[i].split(',');
+    let nodeObj = {
+      "timestamp": new Date(),
+      "nodeIP": nodeArray[0],
+      "gatewayIP": nodeArray[1]
+    };
+    console.log(`Line ${i + 1} Object` + nodeObj);
+    resultArray.push(nodeObj);
+  }
   // console.log('Result Array: ' + resultArray);
   res.json({
     "message": "It Worked!",
-    "data": str
+    "data": resultArray
   });
 });
 
