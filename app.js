@@ -1,36 +1,20 @@
-// Node.js + Express MemCachier Example
-// Author: MemCachier Inc.
-// License: MIT
+var express = require('express');
+var logger = require('morgan');
+var path = require('path');
+var winston = require('winston');
+var memjs = require('memjs').Client;
+var util = require('./util');
 
-/*jshint node: true */
-/*jslint unparam: true*/
+const logFile = 'nodejs.log';
+const mjs = memjs.create();
 
-// Douglas Crockford is wrong, synchronous at startup makes sense.
-/*jslint stupid: true*/
-
-// Dependencies
-var express = require('express'),
-    logger = require('morgan'),
-    path = require('path'),
-    winston = require('winston'),
-    memjs = require("memjs").Client;
-
-// Constants / Configuration
-var logFile = 'nodejs.log';
-var mjs = memjs.create();
-
-// Start Express
 var app = express();
-
 app.use(express.urlencoded());
 app.use(express.json());
 
-
-// View Engine Setup
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'jade');
 
-// Middleware Setup
 app.use(logger('dev'));
 app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
 app.use(express.static(path.join(__dirname, 'public')));
@@ -39,63 +23,60 @@ app.use(app.router);
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
-var exitnodes = ['45.34.140.42'];
+const exitnodes = ['45.34.140.42'];
   
-var handleErr = function(err) {
-  if (err) {
-
-    console.log("Error setting key: " + err);
-
-    res.render('error', {
-      message: err.message,
-      error: err
-    });
-  } 
+let handleErr = function(err) {
+    if (err) {
+      console.log("Error setting key: " + err);
+      return res.status(502).json({ error: 'Could not set key' });
+    } 
+    return res.json({ message: 'Set attached values', result: processed });
+  };
+  mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
 };
 
-var isAlive = function(req, res) {
-  var gateways = req.query.numberOfGateways || 'n/a';
-  var routes = req.query.numberOfRoutes || 'n/a';
-
-
-  var jsonResults = {
-    numberOfGateways: gateways === "n/a" ? gateways : Number(gateways),
-    numberOfRoutes: routes === "n/a" ? routes : Number(routes)
-  };
-  mjs.set('alivejson', JSON.stringify(jsonResults), {expires: 120}, handleErr);
-}
-
-// Routes
-app.get('/', function(req, res) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-  console.log('from [' + ip + ']');
-
-  if (exitnodes.includes(ip)) {
-    console.log('ip is an exitnode');
-    isAlive(req, res);  
+/**
+ * Process incoming request and update memcache. Returns an error if necessary.
+ */
+var updateCache = function(req, res) {
+  let processed = util.processUpdate(req);
+  if (processed.error) {
+    // Couldn't get the data needed to process request => 400 - Bad Request
+    return res.status(400).json(processed);
   }
+};
+
+app.get('/', function(req, res) {
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
   mjs.get('alivejson', function(err, v) {
-    if (v) {
-      let d = JSON.parse(v);
-      let msg = `Yes! Connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
-      res.render('index', {value: msg});
-    } else {
-      res.render('index', {value: 'No, the exit node has not checked in the last 2 minutes.'});
-    }
+    //TODO Handle the error!
+    let msg = util.messageFromCacheData(v);
+    //TODO Might make sense to do
+    // if (msg.error) { res.status(404); }
+    // ...but the issue isn't that the client specified a bad URI, so...
+    res.render('index', {value: msg});
   });
 });
 
 app.get('/api/v0/monitor', function(req, res) {
   mjs.get('alivejson', function(err, v) {
-    if (v) {
-      let data = JSON.parse(v);
-      res.json(data);
-    } else {
-      res.json({error: 'No, the exit node has not checked in the last 2 minutes.'});
-    }
+    //TODO Handle the error!
+    let j = util.jsonFromCacheData(v);
+    res.json(j);
   });
 });
+
+app.post('/api/v0/monitor', function(req, res) {
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  if (exitnodes.includes(ip)) {
+    console.log('Received update from exit node ' + ip);
+    updateCache(req, res);  
+  } else {
+    console.log('Received update from unfamiliar IP: ' + ip);
+    return res.status(403).json({ error: "You aren't an exit node." });
+  }
 
 app.get('/api/v0/nodes', function(req, res) {
   mjs.get('nodes', function(err, v) {
@@ -157,9 +138,6 @@ app.use(function(err, req, res, next) {
     error: {}
   });
 });
-
-// Middleware
-
 
 module.exports = app;
 
