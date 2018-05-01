@@ -25,22 +25,7 @@ winston.add(winston.transports.File, { filename: logFile });
 
 const exitnodes = ['45.34.140.42'];
 
-/**
- * Process incoming request and update memcache. Returns an error if necessary.
- */
-let updateCache = function(req, res, handleErr) {
-  let processed = util.processUpdate(req);
-  mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
-};
-
 app.get('/', function(req, res) {
-  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-  if (exitnodes.includes(ip)) {
-      console.log('ip is an exitnode');
-      updateCache(req, res, function(err) {} );
-  }
-
   mjs.get('alivejson', function(err, v) {
     //TODO Handle the error!
     let msg = util.messageFromCacheData(v);
@@ -70,7 +55,8 @@ app.post('/api/v0/monitor', function(req, res) {
       }
       return res.json({ message: 'Set attached values', result: processed });
     };
-    updateCache(req, res, handleErr);
+    let processed = util.processUpdate(req);
+    mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
   } else {
     console.log('Received update from unfamiliar IP: [' + ip + ']');
     return res.status(403).json({ error: "You aren't an exit node." });
