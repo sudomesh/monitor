@@ -2,6 +2,8 @@
 
 To help monitor network health. 
 
+[![Build Status](https://travis-ci.org/sudomesh/monitor.svg?branch=master)](https://travis-ci.org/sudomesh/monitor)
+
 Currently, exit node hits a url at https://peoplesopen.herokuapp.com using [monitor.sh](./monitor.sh) script . This relays information about the number of active routes and number of active gateways. If the exit node doesn't check-in for longer than 2 minutes, it is assumed to be down.
 
 Uses memcache/memjs and is supposed to run on heroku.
