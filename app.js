@@ -30,10 +30,6 @@ const exitnodes = ['45.34.140.42'];
  */
 let updateCache = function(req, res, handleErr) {
   let processed = util.processUpdate(req);
-  if (processed.error) {
-    // Couldn't get the data needed to process request => 400 - Bad Request
-    return res.status(400).json(processed);
-  }
   mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
 };
 
@@ -42,7 +38,7 @@ app.get('/', function(req, res) {
 
   if (exitnodes.includes(ip)) {
       console.log('ip is an exitnode');
-      updateCache(req, res, function(err) { if (err) { console.log("failed to set key") } } );
+      updateCache(req, res, function(err) {} );
   }
 
   mjs.get('alivejson', function(err, v) {
@@ -68,15 +64,15 @@ app.post('/api/v0/monitor', function(req, res) {
 
   if (exitnodes.includes(ip)) {
     console.log('Received update from exit node ' + ip);
-      let handleErr = function(err) {
-          if (err) {
-              return res.status(502).json({ error: 'Could not set key' });
-          }
-          return res.json({ message: 'Set attached values', result: processed });
-      };
-      updateCache(req, res, handleErr);
+    let handleErr = function(err) {
+      if (err) {
+        return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
+      }
+      return res.json({ message: 'Set attached values', result: processed });
+    };
+    updateCache(req, res, handleErr);
   } else {
-    console.log('Received update from unfamiliar IP: ' + ip);
+    console.log('Received update from unfamiliar IP: [' + ip + ']');
     return res.status(403).json({ error: "You aren't an exit node." });
   }
 });
