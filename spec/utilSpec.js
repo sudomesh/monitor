@@ -1,6 +1,9 @@
 var util = require("../util");
 
 describe("processParameter", function() {
+  it("handles an undefined parameter", function() {
+    expect(util.processParameter(undefined)).toBe("n/a");
+  });
   it("handles a missing parameter", function() {
     expect(util.processParameter(null)).toBe("n/a");
   });

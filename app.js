@@ -8,7 +8,7 @@ var util = require('./util');
 const logFile = 'nodejs.log';
 const mjs = memjs.create();
 
-var app = express();
+const app = express();
 app.use(express.urlencoded());
 app.use(express.json());
 
@@ -24,6 +24,7 @@ app.use(app.router);
 winston.add(winston.transports.File, { filename: logFile });
 
 const exitnodes = ['45.34.140.42'];
+app.exitnodes = exitnodes;
 
 app.get('/', function(req, res) {
   mjs.get('alivejson', function(err, v) {
@@ -45,7 +46,7 @@ app.get('/api/v0/monitor', function(req, res) {
 });
 
 app.post('/api/v0/monitor', function(req, res) {
-  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
 
   if (exitnodes.includes(ip)) {
     console.log('Received update from exit node ' + ip);
@@ -55,8 +56,12 @@ app.post('/api/v0/monitor', function(req, res) {
       }
       return res.json({ message: 'Set attached values', result: processed });
     };
-    let processed = util.processUpdate(req);
-    mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+    const processed = util.processUpdate(req);
+    if (processed.error) {
+      return res.status(400).json(processed);
+    } else {
+      mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+    }
   } else {
     console.log('Received update from unfamiliar IP: [' + ip + ']');
     return res.status(403).json({ error: "You aren't an exit node." });
