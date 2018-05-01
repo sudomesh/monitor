@@ -24,30 +24,26 @@ app.use(app.router);
 winston.add(winston.transports.File, { filename: logFile });
 
 const exitnodes = ['45.34.140.42'];
-  
-let handleErr = function(err) {
-    if (err) {
-      console.log("Error setting key: " + err);
-      return res.status(502).json({ error: 'Could not set key' });
-    } 
-    return res.json({ message: 'Set attached values', result: processed });
-  };
-  mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
-};
 
 /**
  * Process incoming request and update memcache. Returns an error if necessary.
  */
-var updateCache = function(req, res) {
+let updateCache = function(req, res, handleErr) {
   let processed = util.processUpdate(req);
   if (processed.error) {
     // Couldn't get the data needed to process request => 400 - Bad Request
     return res.status(400).json(processed);
   }
+  mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
 };
 
 app.get('/', function(req, res) {
-  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  let ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+  if (exitnodes.includes(ip)) {
+      console.log('ip is an exitnode');
+      updateCache(req, res, function(err) { if (err) { console.log("failed to set key") } } );
+  }
 
   mjs.get('alivejson', function(err, v) {
     //TODO Handle the error!
@@ -72,11 +68,18 @@ app.post('/api/v0/monitor', function(req, res) {
 
   if (exitnodes.includes(ip)) {
     console.log('Received update from exit node ' + ip);
-    updateCache(req, res);  
+      let handleErr = function(err) {
+          if (err) {
+              return res.status(502).json({ error: 'Could not set key' });
+          }
+          return res.json({ message: 'Set attached values', result: processed });
+      };
+      updateCache(req, res, handleErr);
   } else {
     console.log('Received update from unfamiliar IP: ' + ip);
     return res.status(403).json({ error: "You aren't an exit node." });
   }
+});
 
 app.get('/api/v0/nodes', function(req, res) {
   mjs.get('nodes', function(err, v) {
@@ -90,7 +93,7 @@ app.get('/api/v0/nodes', function(req, res) {
 });
 
 
-app.post('/routing-table', (req, res) => {
+app.post('/routing-table', function (req, res) {
   let str = Object.keys(req.body)[0];
   // console.log("Request Body:");
   // console.log(str);
@@ -108,13 +111,17 @@ app.post('/routing-table', (req, res) => {
     console.log(`Line ${i + 1} Object` + nodeObj);
     resultArray.push(nodeObj);
   }
-  // console.log('Result Array: ' + resultArray);
+  let handleErr = function(err) {
+    if (err) {
+        console.log("Error setting key: " + err);
+        return res.status(502).json({ error: 'Could not set key' });
+    }
+    return  res.json({
+        "message": "It Worked!",
+        "data": resultArray
+    });
+  };
   mjs.set('nodes', JSON.stringify(resultArray), {}, handleErr);
-
-  res.json({
-    "message": "It Worked!",
-    "data": resultArray
-  });
 });
 
 /// Error Handlers
