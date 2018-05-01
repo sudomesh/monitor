@@ -4,7 +4,10 @@ const noCheckInMessage = 'No, the exit node has not checked in during the last 2
  * Returns n/a for any input that isn't a nonnegative number, otherwise returns the number.
  */
 var nonZeroOrNA = function(n) {
-    return (n && (n * 1) >= 0) ? n * 1 : 'n/a';
+  if (typeof n == 'number' && n >= 0) {
+    return n;
+  }
+  return 'n/a';
 };
 
 /**
@@ -23,8 +26,7 @@ module.exports.processUpdate = function(req) {
   }
 };
 
-
-module.exports.processParameter = nonZeroOrNA
+module.exports.nonZeroOrNA = nonZeroOrNA
 
 
 
