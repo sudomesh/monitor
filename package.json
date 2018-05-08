@@ -16,18 +16,21 @@
     "url": "https://github.com/sudomesh/monitor/issues"
   },
   "dependencies": {
-    "express": "~3.21.2",
-    "morgan": "~1.0.0",
+    "body-parser": "^1.18.2",
     "debug": "~0.7.4",
+    "express": "~3.21.2",
     "jade": "~1.11.0",
     "less-middleware": "0.1.15",
-    "winston": "0.7.3",
-    "memjs": "1.1.0"
+    "memjs": "1.1.0",
+    "morgan": "~1.0.0",
+    "winston": "0.7.3"
   },
   "devDependencies": {
     "jasmine": "^3.1.0",
     "node-env-file": "0.1.8",
     "request": "2.85.0",
     "supertest": "^3.0.0"
-  }
+  },
+  "engineStrict": true,
+  "engines": { "node" : ">=7.6.0" }
 }

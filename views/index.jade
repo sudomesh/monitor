@@ -8,4 +8,20 @@ block content
   p Please help make this page better at 
     a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor
 
+  h3="nodes"  
+  if nodes
+    table.table
+      thead
+        tr
+          th='node'
+          th='gateway'
+          th='last seen'
+      tbody
+        each node in nodes
+          if node.nodeIP && node.gatewayIP && node.timestamp
+            tr
+              td=node.nodeIP
+              td=node.gatewayIP
+              td=node.timestamp
+
   img(src='diagram.jpg')

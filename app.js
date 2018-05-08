@@ -1,3 +1,4 @@
+var bodyParser = require('body-parser')
 var express = require('express');
 var logger = require('morgan');
 var path = require('path');
@@ -26,16 +27,33 @@ winston.add(winston.transports.File, { filename: logFile });
 const exitnodes = ['45.34.140.42'];
 app.exitnodes = exitnodes;
 
-app.get('/', function(req, res) {
-  mjs.get('alivejson', function(err, v) {
-    //TODO Handle the error!
-    let msg = util.messageFromCacheData(v);
-    //TODO Might make sense to do
-    // if (msg.error) { res.status(404); }
-    // ...but the issue isn't that the client specified a bad URI, so...
-    res.render('index', {value: msg});
+/**
+ * Get a data object from memcache by key
+ * @param {String} key - memcache key to read
+ * @returns {Object} - parsed Object from memcache 
+ */
+async function getCacheData(key) {
+  const { value } = await mjs.get(key)
+  const data = JSON.parse(value)
+  return data
+}
+
+/**
+ * wrap a function that returns promise and return an express middleware
+ * @param {Function} fn - A function that accepts (req, res, next) and returns promise 
+ * @returns {Function} an express middleware (request handler)
+ */
+const asyncMiddleware = fn => (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+};
+
+// Home Page
+app.get('/', asyncMiddleware(async function(req, res, next) {
+  res.render('index', {
+    value: util.messageFromCacheData(await getCacheData('alivejson')),
+    nodes: await getCacheData('nodes')
   });
-});
+}));
 
 app.get('/api/v0/monitor', function(req, res) {
   mjs.get('alivejson', function(err, v) {
@@ -80,10 +98,8 @@ app.get('/api/v0/nodes', function(req, res) {
 });
 
 
-app.post('/routing-table', function (req, res) {
-  let str = Object.keys(req.body)[0];
-  // console.log("Request Body:");
-  // console.log(str);
+app.post('/routing-table', bodyParser.text(), function (req, res) {
+  let str = req.body
   let lineArray = str.split("|");
   console.log(JSON.stringify(lineArray));
   let resultArray = [];

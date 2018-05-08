@@ -34,10 +34,10 @@ module.exports.nonZeroOrNA = nonZeroOrNA
  * Computes message for Jade template from data returned from memcache.
  */
 module.exports.messageFromCacheData = function(v) {
+  const d = (typeof v === 'string') ? JSON.parse(v) : v
   //TODO differentiate null v, non-json v, etc.
-  if (v) {
+  if (d) {
     //TODO What happens when parse fails?
-    let d = JSON.parse(v);
     return `Yes! Connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
   } else {
     return noCheckInMessage;
