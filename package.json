@@ -30,5 +30,7 @@
     "node-env-file": "0.1.8",
     "request": "2.85.0",
     "supertest": "^3.0.0"
-  }
+  },
+  "engineStrict": true,
+  "engines": { "node" : ">=7.6.0" }
 }
