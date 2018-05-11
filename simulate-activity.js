@@ -59,7 +59,7 @@ async function simulateRoutingTableRequest(body) {
       console.info(`Successful /routing-table request`)
       break;
     default:
-      throw new Error("Unexpected statusCode from simulated routing table request: ${response.statusCode}")
+      throw new Error(`Unexpected statusCode from simulated routing table request: ${response.statusCode}`)
   }
 }
 
