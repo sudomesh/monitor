@@ -24,8 +24,18 @@ app.use(app.router);
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
-const exitnodes = ['45.34.140.42'];
-app.exitnodes = exitnodes;
+// Only ips in this list are allowed to POST monitor updates
+const exitnodeIps = ['45.34.140.42'];
+const ipAuthMiddleware = (req, res, next) => {
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  if (exitnodeIps.includes(ip)) {
+    console.log('Received update from exit node ' + ip);
+    next();
+  } else {
+    console.log('Received update from unfamiliar IP: [' + ip + ']');
+    return res.status(403).json({ error: "You aren't an exit node." });
+  }
+};
 
 /**
  * Get a data object from memcache by key
@@ -63,26 +73,18 @@ app.get('/api/v0/monitor', function(req, res) {
   });
 });
 
-app.post('/api/v0/monitor', function(req, res) {
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-
-  if (exitnodes.includes(ip)) {
-    console.log('Received update from exit node ' + ip);
-    let handleErr = function(err) {
-      if (err) {
-        return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
-      }
-      return res.json({ message: 'Set attached values', result: processed });
-    };
-    const processed = util.processUpdate(req);
-    if (processed.error) {
-      return res.status(400).json(processed);
-    } else {
-      mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+app.post('/api/v0/monitor', ipAuthMiddleware, function(req, res) {
+  let handleErr = function(err) {
+    if (err) {
+      return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
     }
+    return res.json({ message: 'Set attached values', result: processed });
+  };
+  const processed = util.processUpdate(req);
+  if (processed.error) {
+    return res.status(400).json(processed);
   } else {
-    console.log('Received update from unfamiliar IP: [' + ip + ']');
-    return res.status(403).json({ error: "You aren't an exit node." });
+    mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
   }
 });
 
