@@ -29,7 +29,7 @@ async function simulateMonitorRequest(data) {
       console.info(`Successful /monitor request`)
       break;
     default:
-      throw new Error("Unexpected statusCode from simulated monitor request: ${response.statusCode}")
+      throw new Error(`Unexpected statusCode from simulated monitor request: ${response.statusCode}`)
   }
 }
 
