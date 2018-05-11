@@ -33,7 +33,7 @@ describe('POST /api/v0/monitor', function () {
   it('error on malformed exit node', function (done) {
     supertest(application)
         .post('/api/v0/monitor')
-        .set('x-forwarded-for', application.exitnodes[0])
+        .set('x-forwarded-for', application.exitNodeIPs[0])
         .accept('Content-Type', 'application/json')
         .expect({ error: 'Bad request' })
         .expect(400, done);
