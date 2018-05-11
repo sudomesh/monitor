@@ -100,33 +100,38 @@ app.get('/api/v0/nodes', function(req, res) {
 });
 
 
-app.post('/routing-table', bodyParser.text(), function (req, res) {
-  let str = req.body
-  let lineArray = str.split("|");
-  console.log(JSON.stringify(lineArray));
-  let resultArray = [];
-  for(let i = 0; i < lineArray.length; i++){
-    console.log(`Processing line ${i + 1}`);
-    let nodeArray = lineArray[i].split(',');
-    let nodeObj = {
-      "timestamp": new Date(),
-      "nodeIP": nodeArray[0],
-      "gatewayIP": nodeArray[1]
-    };
-    console.log(`Line ${i + 1} Object` + nodeObj);
-    resultArray.push(nodeObj);
+app.post('/routing-table', ipAuthMiddleware, bodyParser.text(), function (req, res) {
+  let routeString = req.body;
+  console.log(`Received routing table update: ${routeString}`);
+  
+  // Trim trailing | if it exists. Consider changing post-routing-table.sh
+  // to not send a trailing |?
+  if (routeString.endsWith('|')) {
+    routeString = routeString.slice(0,-1);
   }
+
+  let now = new Date();
+  let nodes = routeString.split('|').map((route) => {
+    let [nodeIP, gatewayIP] = route.split(',');
+    return {
+      "timestamp": now,
+      "nodeIP": nodeIP,
+      "gatewayIP": gatewayIP
+    };
+  });
+  
   let handleErr = function(err) {
     if (err) {
         console.log("Error setting key: " + err);
         return res.status(502).json({ error: 'Could not set key' });
     }
-    return  res.json({
+    return res.json({
         "message": "It Worked!",
-        "data": resultArray
+        "data": nodes
     });
   };
-  mjs.set('nodes', JSON.stringify(resultArray), {}, handleErr);
+  
+  mjs.set('nodes', JSON.stringify(nodes), {}, handleErr);
 });
 
 /// Error Handlers
