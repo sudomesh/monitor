@@ -18,7 +18,7 @@ if (require.main === module) {
 async function main() {
   return Promise.all([
     simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 21 }),
-    simulateRoutingTableRequest('127.0.0.0/8,127.0.0.1|128.0.0.0/8,128.0.0.1|129.0.0.0/8,129.0.0.1|')
+    simulateRoutingTableRequest('129.0.0.0/8,129.0.0.1|127.0.0.0/8,127.0.0.1|128.0.0.0/8,128.0.0.1|127.0.0.10/8,127.0.0.1|')
   ])
 }
 

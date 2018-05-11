@@ -59,9 +59,20 @@ const asyncMiddleware = fn => (req, res, next) => {
 
 // Home Page
 app.get('/', asyncMiddleware(async function(req, res, next) {
+  let nodes = await getCacheData('nodes');
+  
+  // Sort nodes by gateway
+  nodes.sort((nodeA, nodeB) => {
+    if (nodeA.gatewayIP < nodeB.gatewayIP)
+      return -1;
+    if (nodeA.gatewayIP > nodeB.gatewayIP)
+      return 1;
+    return 0;
+  });
+  
   res.render('index', {
     value: util.messageFromCacheData(await getCacheData('alivejson')),
-    nodes: await getCacheData('nodes')
+    nodes: nodes
   });
 }));
 
