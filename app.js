@@ -25,10 +25,10 @@ app.use(app.router);
 winston.add(winston.transports.File, { filename: logFile });
 
 // Only ips in this list are allowed to POST monitor updates
-const exitnodeIps = ['45.34.140.42'];
+const exitNodeIPs = ['45.34.140.42'];
 const ipAuthMiddleware = (req, res, next) => {
   const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  if (exitnodeIps.includes(ip)) {
+  if (exitNodeIPs.includes(ip)) {
     console.log('Received update from exit node ' + ip);
     next();
   } else {
@@ -167,5 +167,6 @@ app.use(function(err, req, res, next) {
   });
 });
 
+app.exitNodeIPs = exitNodeIPs;
 module.exports = app;
 
