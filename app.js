@@ -36,7 +36,7 @@ function MonitorApp ({
   /**
    * Get a data object from memcache by key
    * @param {String} key - memcache key to read
-   * @returns {Object} - parsed Object from memcache 
+   * @returns {Object|undefined} - parsed Object from memcache. undefined if key is not in memcache 
    */
   async function getCacheData(key) {
     const { value } = await mjs.get(key)
