@@ -46,7 +46,7 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let nodes = await getCacheData('nodes');
+    let nodes = await getCacheData('nodes') || [];
     
     // Sort nodes by gateway
     nodes.sort((nodeA, nodeB) => {
