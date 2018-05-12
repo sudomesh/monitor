@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 var debug = require('debug')('my-application');
-var app = require('../app');
+var MonitorApp = require('../app').MonitorApp
+var app = MonitorApp()
 
 app.set('port', process.env.PORT || 3000);
 
