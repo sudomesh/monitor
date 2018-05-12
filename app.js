@@ -36,7 +36,7 @@ function MonitorApp ({
   /**
    * Get a data object from memcache by key
    * @param {String} key - memcache key to read
-   * @returns {Object} - parsed Object from memcache 
+   * @returns {Object|undefined} - parsed Object from memcache. undefined if key is not in memcache 
    */
   async function getCacheData(key) {
     const { value } = await mjs.get(key)
@@ -46,7 +46,7 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let nodes = await getCacheData('nodes');
+    let nodes = await getCacheData('nodes') || [];
     
     // Sort nodes by gateway
     nodes.sort((nodeA, nodeB) => {
