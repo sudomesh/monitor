@@ -19,7 +19,10 @@ module.exports.MonitorApp = MonitorApp
 /**
  * Create an http request listener (and express app) for the PON Monitor App
  */
-function MonitorApp () {
+function MonitorApp ({
+  // Only ips in this list are allowed to POST monitor updates
+  exitNodeIPs=['45.34.140.42']
+}={}) {
   const mjs = memjs.create();
   const app = express();
 
@@ -34,8 +37,6 @@ function MonitorApp () {
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(app.router);
 
-  // Only ips in this list are allowed to POST monitor updates
-  const exitNodeIPs = ['45.34.140.42'];
   const ipAuthMiddleware = (req, res, next) => {
     const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     if (exitNodeIPs.includes(ip)) {
