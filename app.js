@@ -15,38 +15,23 @@ module.exports = MonitorApp();
 
 module.exports.MonitorApp = MonitorApp
 
-
 /**
  * Create an http request listener (and express app) for the PON Monitor App
  */
 function MonitorApp ({
+  app=express(),
   // Only ips in this list are allowed to POST monitor updates
-  exitNodeIPs=['45.34.140.42']
+  exitNodeIPs=['45.34.140.42'],
+  mjs=memjs.create(),
 }={}) {
-  const mjs = memjs.create();
-  const app = express();
-
   app.use(express.urlencoded());
   app.use(express.json());
-  
   app.set('views', path.join(__dirname, 'views'));
   app.set('view engine', 'jade');
-  
   app.use(logger('dev'));
   app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(app.router);
-
-  const ipAuthMiddleware = (req, res, next) => {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    if (exitNodeIPs.includes(ip)) {
-      console.log('Received update from exit node ' + ip);
-      next();
-    } else {
-      console.log('Received update from unfamiliar IP: [' + ip + ']');
-      return res.status(403).json({ error: "You aren't an exit node." });
-    }
-  };
 
   /**
    * Get a data object from memcache by key
@@ -58,15 +43,6 @@ function MonitorApp ({
     const data = JSON.parse(value)
     return data
   }
-
-  /**
-   * wrap a function that returns promise and return an express middleware
-   * @param {Function} fn - A function that accepts (req, res, next) and returns promise 
-   * @returns {Function} an express middleware (request handler)
-   */
-  const asyncMiddleware = fn => (req, res, next) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
-  };
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
@@ -95,7 +71,7 @@ function MonitorApp ({
     });
   });
 
-  app.post('/api/v0/monitor', ipAuthMiddleware, function(req, res) {
+  app.post('/api/v0/monitor', ipAuthMiddleware(exitNodeIPs), function(req, res) {
     let handleErr = function(err) {
       if (err) {
         return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
@@ -122,7 +98,7 @@ function MonitorApp ({
   });
 
 
-  app.post('/routing-table', ipAuthMiddleware, bodyParser.text(), function (req, res) {
+  app.post('/routing-table', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
     
@@ -181,3 +157,25 @@ function MonitorApp ({
   app.exitNodeIPs = exitNodeIPs;
   return app
 }
+
+function ipAuthMiddleware (exitNodeIPs) {
+  return (req, res, next) => {
+    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    if (exitNodeIPs.includes(ip)) {
+      console.log('Received update from exit node ' + ip);
+      next();
+    } else {
+      console.log('Received update from unfamiliar IP: [' + ip + ']');
+      return res.status(403).json({ error: "You aren't an exit node." });
+    }
+  }
+}
+
+/**
+ * wrap a function that returns promise and return an express middleware
+ * @param {Function} fn - A function that accepts (req, res, next) and returns promise 
+ * @returns {Function} an express middleware (request handler)
+ */
+function asyncMiddleware (fn) { return (req, res, next) => {
+  Promise.resolve(fn(req, res, next)).catch(next);
+}}
