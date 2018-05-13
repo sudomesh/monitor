@@ -66,7 +66,7 @@ run ```npm install``` to install node dependencies.
 
 4. copy some configuration files
 
-```cp prod.env .env```
+```cp dev.env .env```
 
 5. start memcached
 

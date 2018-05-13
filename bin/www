@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-var debug = require('debug')('my-application');
+var debug = require('debug')('monitor-app');
 var MonitorApp = require('../app').MonitorApp
 var app = MonitorApp()
 
