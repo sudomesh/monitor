@@ -8,6 +8,9 @@ block content
   p Please help make this page better at 
     a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor
 
+  h3="diagram"
+  img(src='diagram.jpg')
+
   h3="nodes"  
   if nodes
     table.table
@@ -23,5 +26,3 @@ block content
               td=node.nodeIP
               td=node.gatewayIP
               td=node.timestamp
-
-  img(src='diagram.jpg')
