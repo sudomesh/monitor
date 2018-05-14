@@ -3,8 +3,9 @@ node_js:
 - '7.10.1'
 
 env:
-- RELEASE_BRANCH=release
-- BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+  global:
+  - RELEASE_BRANCH=release
+  - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
 
 stages:
   - name: wrong-branch-for-tag-release
