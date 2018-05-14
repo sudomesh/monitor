@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 
-set -e
 set -x
 
 NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
@@ -13,6 +12,15 @@ if [ -z "$GIT_REPO_REMOTE" ]; then
     exit 1
 fi
 
+if ! [ -z "$GITHUB_SSH_KEY_PRIVATE" ]; then
+    mkdir -p ~/.ssh
+    echo "$GITHUB_SSH_KEY_PRIVATE" > ~/.ssh/github_ssh_key
+    echo "GITHUB_SSH_KEY_PRIVATE=$(cat ~/.ssh/github_ssh_key)"
+    chmod 600 ~/.ssh/github_ssh_key
+    eval $(ssh-agent -s)
+    ssh-add ~/.ssh/github_ssh_key
+fi
+
 git remote add release_repo "$GIT_REPO_REMOTE"
 git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
-git push release_repo "$NODE_PACKAGE_VERSION"
+git push release_repo "$NODE_PACKAGE_VERSION" || exit 1

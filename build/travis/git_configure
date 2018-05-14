@@ -2,15 +2,3 @@
 
 git config --local user.name "Travis CI"
 git config --local user.email "travis-ci@sudomesh.org"
-
-if ! [ -z "$GITHUB_SSH_KEY_PRIVATE" ]; then
-    mkdir -p ~/.ssh
-    echo "$GITHUB_SSH_KEY_PRIVATE" > ~/.ssh/github_ssh_key
-    echo "GITHUB_SSH_KEY_PRIVATE=$(cat ~/.ssh/github_ssh_key)"
-    chmod 600 ~/.ssh/github_ssh_key
-    eval $(ssh-agent -s)
-    ssh-add ~/.ssh/github_ssh_key
-else
-    echo "Failed to load GITHUB_SSH_PRIVATE_KEY"
-    exit 1
-fi
