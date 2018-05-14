@@ -24,17 +24,17 @@ git_tag_exists () {
 }
 
 main () {
-    : "${BRANCH:="$(git symbolic-ref --short -q HEAD)"}"
     package_version="$(cat $MONITOR_DIR/package.json | jq -r .version)"
+    >&2 echo "check_npm_version BRANCH=$BRANCH RELEASE_BRANCH=$RELEASE_BRANCH TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
     if git_tag_exists "$package_version"; then
-        if ! [ -z "$RELEASE_BRANCH" ] && [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
-            # if there is a RELEASE_BRANCH defined, and this is it, then its expected that the git tag doesn't exist. We need to make it!
+        if ! [ -z "$RELEASE_BRANCH" ] && [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ "$TRAVIS_BRANCH" = "$RELEASE_BRANCH" ]; then
+            >&2 echo "if there is a RELEASE_BRANCH defined, and this is it, then its expected that the git tag doesn't exist. We need to make it!"
             exit 0
         fi
-        # tag already exists for this version. Error.
+        >&2 echo "tag=$package_version already exist. Error. Increase the package.json version to an unused git tag"
         exit 1
     else
-        # tag not taken for version. Good.
+        >&2 echo "tag not taken for version. Good."
         exit 0
     fi
 }

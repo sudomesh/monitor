@@ -3,7 +3,6 @@ node_js:
 - 7.10.1
 env:
   global:
-  - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
   - GIT_REPO_REMOTE=git@github.com:$TRAVIS_REPO_SLUG
   - REPO_CONFIG_DIR=build/travis/origins/github.com/$TRAVIS_REPO_SLUG
   - REPO_CONFIG_VARS=$REPO_CONFIG_DIR/vars
