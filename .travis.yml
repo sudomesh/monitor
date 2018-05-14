@@ -12,14 +12,14 @@ jobs:
     - stage: dont tag
       name: wrong-branch-for-tag-release
       # require the branch name to be master
-      if: "branch != $RELEASE_BRANCH"
+      if: "branch != env(RELEASE_BRANCH)"
       script:
       - echo "in wrong-branch-for-tag-release stage BRANCH=$BRANCH"
 
     - stage: tag release
       name: tag-release
       # require the branch name to be master
-      if: "branch = $RELEASE_BRANCH"
+      if: "branch = env(RELEASE_BRANCH)"
       script:
       - echo "in tag-release stage BRANCH=$BRANCH"
       - NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
