@@ -6,6 +6,7 @@ env:
   - RELEASE_BRANCH=release
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
   - ENCRYPTION_LABEL=c8bf86153df9
+  - DEPLOY_REPO=https://github.com/gobengo/monitor.git
 before_install:
 # Decrypt travis secret for ssh private key
 - ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
@@ -21,9 +22,8 @@ before_install:
 
 after_success:
 - REPO=`git config remote.origin.url`
-- echo "REPO=$REPO"
 - |
-  if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
+  if [ "$BRANCH" = "$RELEASE_BRANCH" ] && [ "$REPO" = "$DEPLOY_REPO" ]; then
     git config --local user.name "Travis CI"
     git config --local user.email "travis-ci@sudomesh.org"
     NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
