@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+: "${RELEASE_BRANCH:=release}"
+
+# not a pull request, and building release branch
+[ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ "$TRAVIS_BRANCH" = "$RELEASE_BRANCH" ]

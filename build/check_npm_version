@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+
+MONITOR_DIR="${BASH_SOURCE%/*}/../"
+
+help () { cat <<EOF
+Check whether the current npm package.json version is allowed.
+
+A version is not allowed if
+* There is already a git tag whose name is the same version, and this is not the release branch (whose CI should create that tag)
+EOF
+}
+
+if [ -z "$MONITOR_DIR" ]; then
+    echo "MONITOR_DIR is required"
+    exit 1
+fi
+
+git_tag_exists () {
+    if [ "0" -eq "$(git tag -l | grep "$1" | wc -l)" ]; then
+        exit 0
+    else
+        exit 1
+    fi
+}
+
+main () {
+    : "${BRANCH:="$(git symbolic-ref --short -q HEAD)"}"
+    package_version="$(cat $MONITOR_DIR/package.json | jq -r .version)"
+    if git_tag_exists "$package_version"; then
+        if ! [ -z "$RELEASE_BRANCH" ] && [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
+            # if there is a RELEASE_BRANCH defined, and this is it, then its expected that the git tag doesn't exist. We need to make it!
+            exit 0
+        fi
+        # tag already exists for this version. Error.
+        exit 1
+    else
+        # tag not taken for version. Good.
+        exit 0
+    fi
+}
+
+main "$@"
