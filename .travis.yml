@@ -8,7 +8,8 @@ env:
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
 
 after_success:
-- if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
+- |
+  if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
     echo "BRANCH=$BRANCH"
     echo "RELEASE_BRANCH=$RELEASE_BRANCH"
     NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
