@@ -17,10 +17,12 @@ if [ -z "$MONITOR_DIR" ]; then
 fi
 
 git_tag_exists () {
+    # echo "git-tag-exists 1=$1"
+    # echo "git-tags=$(git tag -l)"
     if [ "0" -eq "$(git tag -l | grep "$1" | wc -l)" ]; then
-        return 0
-    else
         return 1
+    else
+        return 0
     fi
 }
 
