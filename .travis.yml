@@ -6,13 +6,11 @@ env:
   global:
   - RELEASE_BRANCH=travis-tags-versions
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+  - COMMIT_AUTHOR_EMAIL=travis-ci@sudomesh.org
 
 after_success:
-- |
-  if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
-    echo "BRANCH=$BRANCH"
-    echo "RELEASE_BRANCH=$RELEASE_BRANCH"
-    NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
-    git tag -a $NODE_PACKAGE_VERSION
-    git push origin $NODE_PACKAGE_VERSION
-  fi
+- git config user.name "Travis CI"
+- git config user.email "$COMMIT_BRANCH"
+- NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
+- git tag -a $NODE_PACKAGE_VERSION
+- if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then git push origin $NODE_PACKAGE_VERSION; fi
