@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 MONITOR_DIR="${BASH_SOURCE%/*}/../"
+: "${RELEASE_BRANCH?check_npm_version requires RELEASE_BRANCH}"
 
 help () { cat <<EOF
 Check whether the current npm package.json version is allowed.
