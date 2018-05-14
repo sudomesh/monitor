@@ -20,4 +20,7 @@ script:
 - echo "BRANCH=$BRANCH"
 - echo "RELEASE_BRANCH=$RELEASE_BRANCH"
 - if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then echo "it is release branch"; else echo "it is NOT release branch"; fi
-- git push origin $NODE_PACKAGE_VERSION
+- REPO=`git config remote.origin.url`
+- SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
+- git remote add github "$SSH_REPO"
+- git push github $NODE_PACKAGE_VERSION
