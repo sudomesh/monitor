@@ -3,7 +3,18 @@ node_js:
 - '7.10.1'
 
 env:
+- RELEASE_BRANCH=release
 - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
 
-deploy:
-- echo "deploying. BRANCH=$BRANCH"
+stages:
+  - name: wrong-branch-for-tag-release
+    # require the branch name to be master
+    if: branch != $RELEASE_BRANCH
+    script:
+    - echo "in wrong-branch-for-tag-release stage BRANCH=$BRANCH"
+
+  - name: tag-release
+    # require the branch name to be master
+    if: branch = $RELEASE_BRANCH
+    script:
+    - echo "in tag-release stage BRANCH=$BRANCH"
