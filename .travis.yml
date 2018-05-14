@@ -12,5 +12,6 @@ before_install:
 - ./build/travis/git_configure
 
 script:
+- set -e
 - ./build/check_npm_version
 - if ./build/travis/should_tag_release; then ./build/tag_release; fi
