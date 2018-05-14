@@ -11,5 +11,5 @@ after_success:
 - git config --local user.name "Travis CI"
 - git config --local user.email "travis-ci@sudomesh.org"
 - NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
-- git tag -a $NODE_PACKAGE_VERSION
+- git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
 - if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then git push origin $NODE_PACKAGE_VERSION; fi
