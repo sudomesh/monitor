@@ -31,4 +31,6 @@ after_success:
     SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
     git remote add release_repo "$SSH_REPO"
     git push release_repo "$NODE_PACKAGE_VERSION"
+  else
+    echo "This is not the right branch or repo to do git tagging"
   fi
