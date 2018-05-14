@@ -3,7 +3,7 @@ node_js:
 - 7.10.1
 env:
   global:
-  - RELEASE_BRANCH=travis-tags-versions
+  - RELEASE_BRANCH=release
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
   - ENCRYPTION_LABEL=c8bf86153df9
 before_install:
