@@ -8,6 +8,7 @@ env:
   - ENCRYPTION_LABEL=c8bf86153df9
   - DEPLOY_REPO=https://github.com/gobengo/monitor.git
 before_install:
+- REPO=`git config remote.origin.url`
 # Decrypt travis secret for ssh private key
 - ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
 - ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
@@ -20,17 +21,26 @@ before_install:
 - eval $(ssh-agent -s)
 - ssh-add ~/.ssh/sudomesh-travis-ci
 
-after_success:
-- REPO=`git config remote.origin.url`
+script:
 - |
-  if [ "$BRANCH" = "$RELEASE_BRANCH" ] && [ "$REPO" = "$DEPLOY_REPO" ]; then
+  if [ "$REPO" = "$DEPLOY_REPO" ] && [ "$TRAVIS_BRANCH" = "$RELEASE_BRANCH" ]; then
     git config --local user.name "Travis CI"
     git config --local user.email "travis-ci@sudomesh.org"
-    NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
-    git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
     SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
     git remote add release_repo "$SSH_REPO"
-    git push release_repo "$NODE_PACKAGE_VERSION"
+    NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
+    if [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ]; then
+      # PR into release branch. Just verify the tag isn't already claimed
+      if [ "1" = "$(git ls-remote release_repo "refs/tags/$NODE_PACKAGE_VERSION" | wc -l)" ]; then
+        echo "Tag already exists! Bump the package.json version to be a value that doesn't already exist"
+        exit 1
+      fi
+    else
+      # Running in release branch itself. We should create the tag
+      git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
+
+      git push release_repo "$NODE_PACKAGE_VERSION"
+    fi
   else
     echo "This is not the right branch or repo to do git tagging"
   fi
