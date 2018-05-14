@@ -10,7 +10,7 @@ env:
 
 after_success:
 - git config user.name "Travis CI"
-- git config user.email "$COMMIT_BRANCH"
+- git config user.email "$COMMIT_AUTHOR_EMAIL"
 - NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
 - git tag -a $NODE_PACKAGE_VERSION
 - if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then git push origin $NODE_PACKAGE_VERSION; fi
