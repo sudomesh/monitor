@@ -5,22 +5,29 @@ env:
   global:
   - RELEASE_BRANCH=travis-tags-versions
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+  - ENCRYPTION_LABEL=c8bf86153df9
 before_install:
+# Decrypt travis secret for ssh private key
+- ENCRYPTED_KEY_VAR="encrypted_${ENCRYPTION_LABEL}_key"
+- ENCRYPTED_IV_VAR="encrypted_${ENCRYPTION_LABEL}_iv"
+- ENCRYPTED_KEY=${!ENCRYPTED_KEY_VAR}
+- ENCRYPTED_IV=${!ENCRYPTED_IV_VAR}
 - mkdir -p ~/.ssh
-- openssl aes-256-cbc -K $encrypted_c8bf86153df9_key -iv $encrypted_c8bf86153df9_iv
+- openssl aes-256-cbc -K $ENCRYPTED_KEY -iv $ENCRYPTED_IV
   -in sudomesh-travis-ci.enc -out ~/.ssh/sudomesh-travis-ci -d
 - chmod 600 ~/.ssh/sudomesh-travis-ci
 - eval $(ssh-agent -s)
 - ssh-add ~/.ssh/sudomesh-travis-ci
-script:
-- git config --local user.name "Travis CI"
-- git config --local user.email "travis-ci@sudomesh.org"
-- NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
-- git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
-- echo "BRANCH=$BRANCH"
-- echo "RELEASE_BRANCH=$RELEASE_BRANCH"
-- if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then echo "it is release branch"; else echo "it is NOT release branch"; fi
-- REPO=`git config remote.origin.url`
-- SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
-- git remote add github "$SSH_REPO"
-- git push github $NODE_PACKAGE_VERSION
+
+after_success:
+- |
+  if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
+    git config --local user.name "Travis CI"
+    git config --local user.email "travis-ci@sudomesh.org"
+    NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
+    git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
+    REPO=`git config remote.origin.url`
+    SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
+    git remote add release_repo "$SSH_REPO"
+    git push release_repo "$NODE_PACKAGE_VERSION"
+  fi
