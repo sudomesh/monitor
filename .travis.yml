@@ -8,6 +8,8 @@ env:
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
 
 after_success:
+- echo $BRANCH
+- echo $RELEASE_BRANCH
 - |
   if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
     echo "BRANCH=$BRANCH"
