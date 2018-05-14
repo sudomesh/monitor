@@ -19,6 +19,8 @@ fi
 : ${GIT_REPO_REMOTE?GIT_REPO_REMOTE is required}
 
 git_tag_exists () {
+    echo "git_tag_exists GIT_REPO_REMOTE=$GIT_REPO_REMOTE TRAVIS_PULL_REQUEST_SLUG=$TRAVIS_PULL_REQUEST_SLUG"
+    echo "GITHUB_SSH_KEY_PRIVATE length=${#GITHUB_SSH_KEY_PRIVATE}"
     if ! [ -z "$GITHUB_SSH_KEY_PRIVATE" ]; then
         echo "ssh-add GITHUB_SSH_KEY_PRIVATE"
         eval $(ssh-agent -s)

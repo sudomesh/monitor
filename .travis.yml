@@ -14,5 +14,5 @@ before_install:
 script:
 - set -e
 - npm test
-- ./build/check_npm_version
+- if [ "$GITHUB_SSH_KEY_PRIVATE" != "" ]; then ./build/check_npm_version; fi
 - if ./build/travis/should_tag_release; then ./build/tag_release; fi

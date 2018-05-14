@@ -1,4 +1,7 @@
 ENCRYPTED_TRAVIS_CI_DEPLOY_KEY="${BASH_SOURCE%/*}/github_ssh_key.enc"
-: ${encrypted_c8bf86153df9_key?missing encrypted_c8bf86153df9_key}
-export GITHUB_SSH_KEY_PRIVATE="$(openssl aes-256-cbc -K $encrypted_c8bf86153df9_key -iv $encrypted_c8bf86153df9_iv -in "$ENCRYPTED_TRAVIS_CI_DEPLOY_KEY" -d)"
+if ! [ -z "$encrypted_c8bf86153df9_key" ]; then
+    export GITHUB_SSH_KEY_PRIVATE="$(openssl aes-256-cbc -K $encrypted_c8bf86153df9_key -iv $encrypted_c8bf86153df9_iv -in "$ENCRYPTED_TRAVIS_CI_DEPLOY_KEY" -d)"
+else
+    >&2 echo "No encrypted_c8bf86153df9_key defined. Can't set GITHUB_SSH_KEY_PRIVATE. continuing anyway."
+fi
 export RELEASE_BRANCH=release
