@@ -1,11 +1,17 @@
 language: node_js
 node_js:
-- '7.10.1'
-
+- 7.10.1
 env:
   global:
   - RELEASE_BRANCH=travis-tags-versions
   - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+
+before_install:
+- openssl aes-256-cbc -K $encrypted_c8bf86153df9_key -iv $encrypted_c8bf86153df9_iv
+  -in sudomesh-travis-ci.enc -out ~\/.ssh/sudomesh-travis-ci -d
+- chmod 600 ~\/.ssh/sudomesh-travis-ci
+- eval $(ssh-agent -s)
+- ssh-add ~\/.ssh/sudomesh-travis-ci
 
 script:
 - git config --local user.name "Travis CI"
@@ -14,13 +20,5 @@ script:
 - git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
 - echo "BRANCH=$BRANCH"
 - echo "RELEASE_BRANCH=$RELEASE_BRANCH"
+- if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then echo "it is release branch"; else echo "it is NOT release branch"; fi
 - git push origin $NODE_PACKAGE_VERSION
-
-# after_success:
-# - git config --local user.name "Travis CI"
-# - git config --local user.email "travis-ci@sudomesh.org"
-# - NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
-# - git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
-# - echo "BRANCH=$BRANCH"
-# - echo "RELEASE_BRANCH=$RELEASE_BRANCH"
-# - git push origin $NODE_PACKAGE_VERSION
