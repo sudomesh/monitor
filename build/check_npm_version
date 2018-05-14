@@ -18,9 +18,9 @@ fi
 
 git_tag_exists () {
     if [ "0" -eq "$(git tag -l | grep "$1" | wc -l)" ]; then
-        exit 0
+        return 0
     else
-        exit 1
+        return 1
     fi
 }
 
@@ -30,13 +30,13 @@ main () {
     if git_tag_exists "$package_version"; then
         if ! [ -z "$RELEASE_BRANCH" ] && [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ "$TRAVIS_BRANCH" = "$RELEASE_BRANCH" ]; then
             >&2 echo "if there is a RELEASE_BRANCH defined, and this is it, then its expected that the git tag doesn't exist. We need to make it!"
-            exit 0
+            return 0
         fi
         >&2 echo "tag=$package_version already exist. Error. Increase the package.json version to an unused git tag"
-        exit 1
+        return 1
     else
         >&2 echo "tag not taken for version. Good."
-        exit 0
+        return 0
     fi
 }
 
