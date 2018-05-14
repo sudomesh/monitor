@@ -8,10 +8,10 @@ env:
 before_install:
 - mkdir -p ~/.ssh
 - openssl aes-256-cbc -K $encrypted_c8bf86153df9_key -iv $encrypted_c8bf86153df9_iv
-  -in sudomesh-travis-ci.enc -out ~\/.ssh/sudomesh-travis-ci -d
-- chmod 600 ~\/.ssh/sudomesh-travis-ci
+  -in sudomesh-travis-ci.enc -out ~/.ssh/sudomesh-travis-ci -d
+- chmod 600 ~/.ssh/sudomesh-travis-ci
 - eval $(ssh-agent -s)
-- ssh-add ~\/.ssh/sudomesh-travis-ci
+- ssh-add ~/.ssh/sudomesh-travis-ci
 script:
 - git config --local user.name "Travis CI"
 - git config --local user.email "travis-ci@sudomesh.org"
