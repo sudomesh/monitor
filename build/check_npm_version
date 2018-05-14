@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+MONITOR_DIR="${BASH_SOURCE%/*}/../"
+: "${RELEASE_BRANCH?check_npm_version requires RELEASE_BRANCH}"
+
+help () { cat <<EOF
+Check whether the current npm package.json version is allowed.
+
+A version is not allowed if
+* There is already a git tag whose name is the same version, and this is not the release branch (whose CI should create that tag)
+EOF
+}
+
+if [ -z "$MONITOR_DIR" ]; then
+    echo "MONITOR_DIR is required"
+    exit 1
+fi
+
+git_tag_exists () {
+    # echo "git-tag-exists 1=$1"
+    # echo "git-tags=$(git tag -l)"
+    if [ "0" -eq "$(git tag -l | grep "$1" | wc -l)" ]; then
+        return 1
+    else
+        return 0
+    fi
+}
+
+main () {
+    package_version="$(cat $MONITOR_DIR/package.json | jq -r .version)"
+    >&2 echo "check_npm_version BRANCH=$BRANCH RELEASE_BRANCH=$RELEASE_BRANCH TRAVIS_BRANCH=$TRAVIS_BRANCH TRAVIS_PULL_REQUEST_BRANCH=$TRAVIS_PULL_REQUEST_BRANCH"
+    if git_tag_exists "$package_version"; then
+        if ! [ -z "$RELEASE_BRANCH" ] && [ -z "$TRAVIS_PULL_REQUEST_BRANCH" ] && [ "$TRAVIS_BRANCH" = "$RELEASE_BRANCH" ]; then
+            >&2 echo "if there is a RELEASE_BRANCH defined, and this is it, then its expected that the git tag doesn't exist. We need to make it!"
+            return 0
+        fi
+        >&2 echo "tag=$package_version already exist. Error. Increase the package.json version to an unused git tag"
+        return 1
+    else
+        >&2 echo "tag not taken for version. Good."
+        return 0
+    fi
+}
+
+main "$@"

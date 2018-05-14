@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+git config --local user.name "Travis CI"
+git config --local user.email "travis-ci@sudomesh.org"
