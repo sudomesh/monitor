@@ -14,7 +14,16 @@ Leaves much room for improvement ;)
 
 To run tests, first install jasmine using ```npm install jasmine -g```. Then, you can run the tests using ```npm test```.
 
-## Deploy to Heroku
+## Deployment
+PRs (and additional commits against them) will always trigger a Travis build.
+Successful Travis builds will spin up a dev deployment on Heroku automatically if the branch is in the repo,
+and dev deployments can be triggered manually by maintainers for if the PR is from a fork.
+
+Merges into master and commits directly against master will both trigger Travis builds.
+Successful builds will then be deployed to
+[peoplesopen-monitor-staging.herokuapp.com](https://peoplesopen-monitor-staging.herokuapp.com).
+
+### Setting up your own Heroku instance
 
 Make sure to enable the memcachier addon. 
 ```
