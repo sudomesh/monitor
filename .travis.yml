@@ -14,6 +14,4 @@ before_install:
 
 script:
 - ./build/check_npm_version
-
-after_success:
 - if ./build/travis/should_tag_release; then ./build/tag_release; fi

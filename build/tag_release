@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -x
-
 NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
 
 : "${GIT_TAG:="$NODE_PACKAGE_VERSION"}
@@ -15,7 +13,6 @@ fi
 if ! [ -z "$GITHUB_SSH_KEY_PRIVATE" ]; then
     mkdir -p ~/.ssh
     echo "$GITHUB_SSH_KEY_PRIVATE" > ~/.ssh/github_ssh_key
-    echo "GITHUB_SSH_KEY_PRIVATE=$(cat ~/.ssh/github_ssh_key)"
     chmod 600 ~/.ssh/github_ssh_key
     eval $(ssh-agent -s)
     ssh-add ~/.ssh/github_ssh_key
