@@ -1,3 +1,9 @@
 language: node_js
 node_js:
 - '7.10.1'
+
+env:
+- BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+
+deploy:
+- echo "deploying. BRANCH=$BRANCH"
