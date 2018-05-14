@@ -1,3 +1,19 @@
 language: node_js
 node_js:
-- '7.10.1'
+- 7.10.1
+env:
+  global:
+  - BRANCH=${TRAVIS_PULL_REQUEST_BRANCH:-$TRAVIS_BRANCH}
+  - GIT_REPO_REMOTE=git@github.com:$TRAVIS_REPO_SLUG
+  - REPO_CONFIG_DIR=build/travis/origins/github.com/$TRAVIS_REPO_SLUG
+  - REPO_CONFIG_VARS=$REPO_CONFIG_DIR/vars
+
+before_install:
+- if [ -f "$REPO_CONFIG_VARS" ]; then . "$REPO_CONFIG_VARS"; fi
+- ./build/travis/git_configure
+
+script:
+- ./build/check_npm_version
+
+after_success:
+- if ./build/travis/should_tag_release; then ./build/tag_release; fi
