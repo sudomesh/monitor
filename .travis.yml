@@ -20,13 +20,14 @@ before_install:
 - ssh-add ~/.ssh/sudomesh-travis-ci
 
 after_success:
+- REPO=`git config remote.origin.url`
+- echo "REPO=$REPO"
 - |
   if [ "$BRANCH" = "$RELEASE_BRANCH" ]; then
     git config --local user.name "Travis CI"
     git config --local user.email "travis-ci@sudomesh.org"
     NODE_PACKAGE_VERSION=$(cat package.json | jq -r .version)
     git tag -a "$NODE_PACKAGE_VERSION" -m "$NODE_PACKAGE_VERSION"
-    REPO=`git config remote.origin.url`
     SSH_REPO=${REPO/https:\/\/github.com\//git@github.com:}
     git remote add release_repo "$SSH_REPO"
     git push release_repo "$NODE_PACKAGE_VERSION"
