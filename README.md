@@ -14,7 +14,16 @@ Leaves much room for improvement ;)
 
 To run tests, first install jasmine using ```npm install jasmine -g```. Then, you can run the tests using ```npm test```.
 
-## Deploy to Heroku
+## Deployment
+PRs (and additional commits against them) will always trigger a Travis build.
+Successful Travis builds will spin up a dev deployment on Heroku automatically if the branch is in the repo,
+and dev deployments can be triggered manually by maintainers for if the PR is from a fork.
+
+Merges into master and commits directly against master will both trigger Travis builds.
+Successful builds will then be deployed to
+[peoplesopen-monitor-staging.herokuapp.com](https://peoplesopen-monitor-staging.herokuapp.com).
+
+### Setting up your own Heroku instance
 
 Make sure to enable the memcachier addon. 
 ```
@@ -46,9 +55,7 @@ Step-by-step guide.
 
 ```sudo apt-get install memcached``` 
 
-1. install foreman using ```gem install foreman``` (also see https://github.com/ddollar/foreman).
-
-2. clone this repository
+1. clone this repository
 
 Open a terminal, install git and clone this repository using:
 
@@ -60,23 +67,19 @@ cd monitor
 
 This should create a new directory called ```monitor``` in your projects directory.
 
-3. install node dependencies 
+2. install node dependencies 
 
 run ```npm install``` to install node dependencies.
 
-4. copy some configuration files
+3. copy some configuration files
 
 ```cp dev.env .env```
 
-5. start memcached
+4. start memcached
 
 ```memcached -v```
 
-6. launch the app locally using foreman
-
-Foreman is an app that ships with the heroku cli and is used to simulate the start of a heroku dyno. Essentially, it is a startup script.
-
-```foreman start```
+5. launch the app locally using `npm start`
 
 Check whether your app launch properly by going to https://localhost:3000 in your favorite browser.
 
