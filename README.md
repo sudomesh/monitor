@@ -4,7 +4,7 @@ To help monitor network health.
 
 [![Build Status](https://travis-ci.org/sudomesh/monitor.svg?branch=master)](https://travis-ci.org/sudomesh/monitor)
 
-Currently, exit node hits a url at https://peoplesopen.herokuapp.com using [monitor.sh](./monitor.sh) script . This relays information about the number of active routes and number of active gateways. If the exit node doesn't check-in for longer than 2 minutes, it is assumed to be down.
+Currently, exit node hits a url at https://peoplesopen.herokuapp.com using [monitor.sh](./monitor.sh) script. This relays information about the number of active routes and number of active gateways. If the exit node doesn't check-in for longer than 2 minutes, it is assumed to be down.
 
 Uses memcache/memjs and is supposed to run on heroku.
 
@@ -17,11 +17,16 @@ To run tests, first install jasmine using ```npm install jasmine -g```. Then, yo
 ## Deployment
 PRs (and additional commits against them) will always trigger a Travis build.
 Successful Travis builds will spin up a dev deployment on Heroku automatically if the branch is in the repo,
-and dev deployments can be triggered manually by maintainers for if the PR is from a fork.
+and dev deployments can be triggered manually by maintainers if the PR is from a fork.
 
 Merges into master and commits directly against master will both trigger Travis builds.
-Successful builds will then be deployed to
-[peoplesopen-monitor-staging.herokuapp.com](https://peoplesopen-monitor-staging.herokuapp.com).
+Successful builds are then deployed to
+[production](https://peoplesopen.herokuapp.com).
+
+As PRs from forks do not automatically deploy review applications,
+new contributors may wish to deploy their own Heroku instances.
+You won't be able to see your logs,
+but dev (free) application is otherwise sufficient for this purpose.
 
 ### Setting up your own Heroku instance
 
