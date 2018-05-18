@@ -146,7 +146,7 @@ function MonitorApp ({
 
 function ipAuthMiddleware (exitNodeIPs) {
   return (req, res, next) => {
-    const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const ip = util.getRequestIP(req);
     if (exitNodeIPs.includes(ip)) {
       console.log('Received update from exit node ' + ip);
       next();

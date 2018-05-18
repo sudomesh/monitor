@@ -55,4 +55,9 @@ module.exports.jsonFromCacheData = function(v) {
   } else {
     return { error: noCheckInMessage };
   }
-}
+};
+
+module.exports.getRequestIP = function(req) {
+  return (req.headers && req.headers['x-forwarded-for']) || (req.connection && req.connection.remoteAddress);
+};
+
