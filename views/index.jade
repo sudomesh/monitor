@@ -2,7 +2,8 @@ extends layout
 
 block content
   h3 Is the Old* Exit Node Alive?
-  h3= value
+  each v in value
+    p= v
   p Please hit "reload" to refresh.
   p * Note that gateways connecting to the New Exit Node are not (yet) included. 
   p Please help make this page better at 

@@ -44,6 +44,16 @@ function MonitorApp ({
     return data
   }
 
+  async function getMonitorUpdates() {
+    // map since we have to return to trigger Promise.all
+    return await Promise.all(exitNodeIPs.map(async ip => {
+      let d = await getCacheData(`alive-${ip}`);
+      d = d ? d : { error: util.noCheckInMessage(ip) };
+      d.ip = ip;
+      return d;
+    }));
+  }
+
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
     let nodes = await getCacheData('nodes') || [];
@@ -56,25 +66,24 @@ function MonitorApp ({
         return 1;
       return 0;
     });
-    
+
+    const data = await getMonitorUpdates();
+
     res.render('index', {
-      value: util.messageFromCacheData(await getCacheData('alivejson')),
+      value: data.map(util.messageFromCacheData),
       nodes: nodes
     });
   }));
 
-  app.get('/api/v0/monitor', function(req, res, next) {
-    mjs.get('alivejson', function(err, v) {
-      if (err) return next(err) 
-      let j = util.jsonFromCacheData(v);
-      res.json(j);
-    });
-  });
+  app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
+    res.json(await getMonitorUpdates());
+  }));
 
   app.post('/api/v0/monitor', ipAuthMiddleware(exitNodeIPs), function(req, res) {
+    const key = `alive-${req.IP}`;
     let handleErr = function(err) {
       if (err) {
-        return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
+        return res.status(502).json({ error: 'Could not set key, because of [' + err + '].' });
       }
       return res.json({ message: 'Set attached values', result: processed });
     };
@@ -82,7 +91,7 @@ function MonitorApp ({
     if (processed.error) {
       return res.status(400).json(processed);
     } else {
-      mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+      mjs.set(key, JSON.stringify(processed), {expires: 120}, handleErr);
     }
   });
 
@@ -147,6 +156,7 @@ function MonitorApp ({
 function ipAuthMiddleware (exitNodeIPs) {
   return (req, res, next) => {
     const ip = util.getRequestIP(req);
+    req.IP = ip;
     if (exitNodeIPs.includes(ip)) {
       console.log('Received update from exit node ' + ip);
       next();
