@@ -21,7 +21,7 @@ module.exports.MonitorApp = MonitorApp
 function MonitorApp ({
   app=express(),
   // Only ips in this list are allowed to POST monitor updates
-  exitNodeIPs=['45.34.140.42'],
+  exitNodeIPs=['45.34.140.42', '64.71.176.94'],
   mjs=memjs.create(),
 }={}) {
   app.use(express.urlencoded());
