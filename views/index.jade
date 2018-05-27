@@ -1,13 +1,11 @@
 extends layout
 
 block content
-  h3 Is the Old* Exit Node Alive?
-  each v in value
-    p= v
-  p Please hit "reload" to refresh.
-  p * Note that gateways connecting to the New Exit Node are not (yet) included. 
+  h3 Which exit nodes are alive?
+  each update in updates
+    p= update
   p Please help make this page better at 
-    a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor
+    a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor.
 
   h3="diagram"
   img(src='diagram.jpg')

@@ -70,7 +70,7 @@ function MonitorApp ({
     const data = await getMonitorUpdates();
 
     res.render('index', {
-      value: data.map(util.messageFromCacheData),
+      updates: data.map(util.messageFromCacheData),
       nodes: nodes
     });
   }));
