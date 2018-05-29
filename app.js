@@ -45,7 +45,6 @@ function MonitorApp ({
   }
 
   async function getMonitorUpdates() {
-    // map since we have to return to trigger Promise.all
     return await Promise.all(exitNodeIPs.map(async ip => {
       let d = await getCacheData(`alive-${ip}`);
       d = d ? d : { error: util.noCheckInMessage(ip) };
@@ -56,17 +55,20 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let nodes = await getCacheData('nodes') || [];
-    
-    // Sort nodes by gateway
-    nodes.sort((nodeA, nodeB) => {
-      if (nodeA.gatewayIP < nodeB.gatewayIP)
-        return -1;
-      if (nodeA.gatewayIP > nodeB.gatewayIP)
-        return 1;
-      return 0;
+    let nodes = await getRoutingTableUpdates();
+    // Sort routing tables by gateway
+    nodes.forEach(node => {
+      if (node.routingTable) {
+        node.routingTable.sort((nodeA, nodeB) => {
+          if (nodeA.gatewayIP < nodeB.gatewayIP)
+            return -1;
+          if (nodeA.gatewayIP > nodeB.gatewayIP)
+            return 1;
+          return 0;
+        });
+      }
     });
-
+    
     const data = await getMonitorUpdates();
 
     res.render('index', {
@@ -80,7 +82,8 @@ function MonitorApp ({
   }));
 
   app.post('/api/v0/monitor', ipAuthMiddleware(exitNodeIPs), function(req, res) {
-    const key = `alive-${req.IP}`;
+    let ip = util.getRequestIP(req);
+    const key = `alive-${ip}`;
     let handleErr = function(err) {
       if (err) {
         return res.status(502).json({ error: 'Could not set key, because of [' + err + '].' });
@@ -95,18 +98,31 @@ function MonitorApp ({
     }
   });
 
-  app.get('/api/v0/nodes', function(req, res) {
-    mjs.get('nodes', function(err, v) {
-      if (v) {
-        let data = JSON.parse(v);
-        res.json(data);
+  async function getRoutingTableUpdates() {
+    return await Promise.all(exitNodeIPs.map(async ip => {
+      let routingTable = await getCacheData(`routing-table-${ip}`);
+      if (routingTable) {
+        return {
+          routingTable: routingTable,
+          exitNodeIP: ip
+        };
       } else {
-        res.json({error: 'failed to retrieve node information'});
+        return {
+          error: util.noCheckInMessage(ip),
+          exitNodeIP: ip
+        };
       }
-    });
-  });
+    }));
+  }
+
+  app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
+    let data = await getRoutingTableUpdates();
+    res.json(data);
+  }));
 
   app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
+    let ip = util.getRequestIP(req);
+    let key = `routing-table-${ip}`;
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
     
@@ -137,7 +153,7 @@ function MonitorApp ({
       });
     };
     
-    mjs.set('nodes', JSON.stringify(nodes), {}, handleErr);
+    mjs.set(key, JSON.stringify(nodes), {}, handleErr);
   });
 
   /// Error Handlers
@@ -155,7 +171,6 @@ function MonitorApp ({
 function ipAuthMiddleware (exitNodeIPs) {
   return (req, res, next) => {
     const ip = util.getRequestIP(req);
-    req.IP = ip;
     if (exitNodeIPs.includes(ip)) {
       console.log('Received update from exit node ' + ip);
       next();
