@@ -106,8 +106,7 @@ function MonitorApp ({
     });
   });
 
-
-  app.post('/routing-table', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
+  app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
     
