@@ -21,7 +21,7 @@ module.exports.MonitorApp = MonitorApp
 function MonitorApp ({
   app=express(),
   // Only ips in this list are allowed to POST monitor updates
-  exitNodeIPs=['45.34.140.42'],
+  exitNodeIPs=['45.34.140.42', '64.71.176.94'],
   mjs=memjs.create(),
 }={}) {
   app.use(express.urlencoded());
@@ -44,37 +44,49 @@ function MonitorApp ({
     return data
   }
 
+  async function getMonitorUpdates() {
+    return await Promise.all(exitNodeIPs.map(async ip => {
+      let d = await getCacheData(`alive-${ip}`);
+      d = d ? d : { error: util.noCheckInMessage(ip) };
+      d.ip = ip;
+      return d;
+    }));
+  }
+
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let nodes = await getCacheData('nodes') || [];
-    
-    // Sort nodes by gateway
-    nodes.sort((nodeA, nodeB) => {
-      if (nodeA.gatewayIP < nodeB.gatewayIP)
-        return -1;
-      if (nodeA.gatewayIP > nodeB.gatewayIP)
-        return 1;
-      return 0;
+    let nodes = await getRoutingTableUpdates();
+    // Sort routing tables by gateway
+    nodes.forEach(node => {
+      if (node.routingTable) {
+        node.routingTable.sort((nodeA, nodeB) => {
+          if (nodeA.gatewayIP < nodeB.gatewayIP)
+            return -1;
+          if (nodeA.gatewayIP > nodeB.gatewayIP)
+            return 1;
+          return 0;
+        });
+      }
     });
     
+    const data = await getMonitorUpdates();
+
     res.render('index', {
-      value: util.messageFromCacheData(await getCacheData('alivejson')),
+      updates: data.map(util.messageFromCacheData),
       nodes: nodes
     });
   }));
 
-  app.get('/api/v0/monitor', function(req, res, next) {
-    mjs.get('alivejson', function(err, v) {
-      if (err) return next(err) 
-      let j = util.jsonFromCacheData(v);
-      res.json(j);
-    });
-  });
+  app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
+    res.json(await getMonitorUpdates());
+  }));
 
   app.post('/api/v0/monitor', ipAuthMiddleware(exitNodeIPs), function(req, res) {
+    let ip = util.getRequestIP(req);
+    const key = `alive-${ip}`;
     let handleErr = function(err) {
       if (err) {
-        return res.status(502).json({ error: 'Could not set key, because of ' + err + '].' });
+        return res.status(502).json({ error: 'Could not set key, because of [' + err + '].' });
       }
       return res.json({ message: 'Set attached values', result: processed });
     };
@@ -82,23 +94,35 @@ function MonitorApp ({
     if (processed.error) {
       return res.status(400).json(processed);
     } else {
-      mjs.set('alivejson', JSON.stringify(processed), {expires: 120}, handleErr);
+      mjs.set(key, JSON.stringify(processed), {expires: 120}, handleErr);
     }
   });
 
-  app.get('/api/v0/nodes', function(req, res) {
-    mjs.get('nodes', function(err, v) {
-      if (v) {
-        let data = JSON.parse(v);
-        res.json(data);
+  async function getRoutingTableUpdates() {
+    return await Promise.all(exitNodeIPs.map(async ip => {
+      let routingTable = await getCacheData(`routing-table-${ip}`);
+      if (routingTable) {
+        return {
+          routingTable: routingTable,
+          exitNodeIP: ip
+        };
       } else {
-        res.json({error: 'failed to retrieve node information'});
+        return {
+          error: util.noCheckInMessage(ip),
+          exitNodeIP: ip
+        };
       }
-    });
-  });
+    }));
+  }
 
+  app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
+    let data = await getRoutingTableUpdates();
+    res.json(data);
+  }));
 
-  app.post('/routing-table', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
+  app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
+    let ip = util.getRequestIP(req);
+    let key = `routing-table-${ip}`;
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
     
@@ -129,7 +153,7 @@ function MonitorApp ({
       });
     };
     
-    mjs.set('nodes', JSON.stringify(nodes), {}, handleErr);
+    mjs.set(key, JSON.stringify(nodes), {}, handleErr);
   });
 
   /// Error Handlers

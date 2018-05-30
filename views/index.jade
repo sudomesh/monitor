@@ -1,28 +1,32 @@
 extends layout
 
 block content
-  h3 Is the Old* Exit Node Alive?
-  h3= value
-  p Please hit "reload" to refresh.
-  p * Note that gateways connecting to the New Exit Node are not (yet) included. 
+  h2 Which exit nodes are alive?
+  each update in updates
+    p= update
   p Please help make this page better at 
-    a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor
+    a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor.
 
-  h3="diagram"
+  h2="diagram"
   img(src='diagram.jpg')
 
-  h3="nodes"  
+  h2="nodes"
   if nodes
-    table.table
-      thead
-        tr
-          th='node'
-          th='gateway'
-          th='last seen'
-      tbody
-        each node in nodes
-          if node.nodeIP && node.gatewayIP && node.timestamp
+    each node in nodes
+      h3= node.exitNodeIP
+      if node.routingTable
+        table.table
+          thead
             tr
-              td=node.nodeIP
-              td=node.gatewayIP
-              td=node.timestamp
+              th='node'
+              th='gateway'
+              th='last seen'
+          tbody
+            each route in node.routingTable
+              if route.nodeIP && route.gatewayIP && route.timestamp
+                tr
+                  td=route.nodeIP
+                  td=route.gatewayIP
+                  td=route.timestamp
+      else
+        p= node.error

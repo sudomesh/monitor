@@ -66,7 +66,7 @@ async function simulateRoutingTableRequest(body) {
 async function routingTableRequest(body) {
   return new Promise((resolve, reject) => {
     const options = {
-      url: `http://localhost:${process.env.PORT}/routing-table`,
+      url: `http://localhost:${process.env.PORT}/api/v0/nodes`,
       headers: {
         'x-forwarded-for': exitnodeIp,
         'content-type': 'text/plain'

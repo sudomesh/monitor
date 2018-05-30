@@ -1,4 +1,6 @@
-const noCheckInMessage = 'No, the exit node has not checked in during the last 2 minutes.';
+module.exports.noCheckInMessage = function(ip) {
+  return `${ip} has not checked in during the last 2 minutes.`;
+};
 
 /**
  * Returns n/a for any input that isn't a nonnegative number, otherwise returns the number.
@@ -28,19 +30,17 @@ module.exports.processUpdate = function(req) {
 
 module.exports.nonZeroOrNA = nonZeroOrNA
 
-
-
 /**
  * Computes message for Jade template from data returned from memcache.
  */
 module.exports.messageFromCacheData = function(v) {
   const d = (typeof v === 'string') ? JSON.parse(v) : v
   //TODO differentiate null v, non-json v, etc.
-  if (d) {
+  if (d && d.error === undefined) {
     //TODO What happens when parse fails?
-    return `Yes! Connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
+    return `${d.ip} is connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
   } else {
-    return noCheckInMessage;
+    return module.exports.noCheckInMessage(d.ip);
   }
 }
 
@@ -53,7 +53,7 @@ module.exports.jsonFromCacheData = function(v) {
     //TODO What happens when parse fails?
     return JSON.parse(v);
   } else {
-    return { error: noCheckInMessage };
+    return { error: module.exports.noCheckInMessage };
   }
 };
 
