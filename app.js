@@ -12,7 +12,6 @@ winston.add(winston.transports.File, { filename: logFile });
 
 // Continue exporting an instance for now for back compat, but consider exporting MonitorApp factory instead
 module.exports = MonitorApp();
-
 module.exports.MonitorApp = MonitorApp
 
 /**
@@ -32,6 +31,10 @@ function MonitorApp ({
   app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
   app.use(express.static(path.join(__dirname, 'public')));
   app.use(app.router);
+
+  //
+  // DB Helpers
+  // 
 
   /**
    * Get a data object from memcache by key
@@ -53,9 +56,31 @@ function MonitorApp ({
     }));
   }
 
+  async function getRoutingTableUpdates() {
+    return await Promise.all(exitNodeIPs.map(async ip => {
+      let routingTable = await getCacheData(`routing-table-${ip}`);
+      if (routingTable) {
+        return {
+          routingTable: routingTable,
+          exitNodeIP: ip
+        };
+      } else {
+        return {
+          error: util.noCheckInMessage(ip),
+          exitNodeIP: ip
+        };
+      }
+    }));
+  }
+
+  // 
+  // HTML Routes
+  // 
+
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
     let nodes = await getRoutingTableUpdates();
+    
     // Sort routing tables by gateway
     nodes.forEach(node => {
       if (node.routingTable) {
@@ -77,6 +102,10 @@ function MonitorApp ({
     });
   }));
 
+  // 
+  // API Routes
+  // 
+
   app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
     res.json(await getMonitorUpdates());
   }));
@@ -97,23 +126,6 @@ function MonitorApp ({
       mjs.set(key, JSON.stringify(processed), {expires: 120}, handleErr);
     }
   });
-
-  async function getRoutingTableUpdates() {
-    return await Promise.all(exitNodeIPs.map(async ip => {
-      let routingTable = await getCacheData(`routing-table-${ip}`);
-      if (routingTable) {
-        return {
-          routingTable: routingTable,
-          exitNodeIP: ip
-        };
-      } else {
-        return {
-          error: util.noCheckInMessage(ip),
-          exitNodeIP: ip
-        };
-      }
-    }));
-  }
 
   app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
     let data = await getRoutingTableUpdates();
@@ -156,17 +168,22 @@ function MonitorApp ({
     mjs.set(key, JSON.stringify(nodes), {}, handleErr);
   });
 
-  /// Error Handlers
+  // Error Handlers
   app.use((err, req, res, next) => {
     res.status(500).render('error', {
       message: err.message,
-      error: (app.get('env') === 'development') ? err : {} // only render full error in development env
+      // only render full error in development env
+      error: (app.get('env') === 'development') ? err : {}
     })
   })
 
   app.exitNodeIPs = exitNodeIPs;
   return app
 }
+
+// 
+// Middleware
+// 
 
 function ipAuthMiddleware (exitNodeIPs) {
   return (req, res, next) => {
