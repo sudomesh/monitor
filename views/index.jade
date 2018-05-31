@@ -31,6 +31,6 @@ block content
               tr
                 td=route.nodeIP
                 td=route.gatewayIP
-                td=route.timestamp
+                td #{timeAgo(route.timestamp)}
     else
       p(style='margin-bottom: 20px')= node.error

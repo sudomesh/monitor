@@ -42,9 +42,8 @@ function MonitorApp ({
    * @returns {Object|undefined} - parsed Object from memcache. undefined if key is not in memcache 
    */
   async function getCacheData(key) {
-    const { value } = await mjs.get(key)
-    const data = JSON.parse(value)
-    return data
+    const { value } = await mjs.get(key);
+    return JSON.parse(value);
   }
 
   async function getMonitorUpdates() {
@@ -97,7 +96,8 @@ function MonitorApp ({
 
     res.render('index', {
       updates: updates,
-      nodes: nodes
+      nodes: nodes,
+      timeAgo: util.timeAgo
     });
   }));
 

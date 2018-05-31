@@ -35,3 +35,21 @@ describe("getRequestIP", function () {
   });
 
 });
+
+describe("timeAgo", function () {
+  it("returns hours ago if more than an hour has passed", function () {
+    let twoHours = 1000 * 60 * 60 * 2;
+    let then = new Date(new Date() - twoHours);
+    expect(u.timeAgo(then)).toBe("2 hours ago");
+  });
+  it("returns minutes ago if more than a minute has passed", function () {
+    let twoMinutes = 1000 * 60 * 2;
+    let then = new Date(new Date() - twoMinutes);
+    expect(u.timeAgo(then)).toBe("2 minutes ago");
+  });
+  it("returns 'less than a minute ago' if less than a minute has passed", function () {
+    let twoSeconds = 1000 * 2;
+    let then = new Date(new Date() - twoSeconds);
+    expect(u.timeAgo(then)).toBe("less than a minute ago");
+  });
+});
