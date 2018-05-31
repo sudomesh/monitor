@@ -1,11 +1,16 @@
 extends layout
 
 block content
-  h2 Which exit nodes are alive?
-  each update in updates
-    p= update
+  h3 Which exit nodes are alive?
+
   p Please help make this page better at 
     a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor.
+  
+  each update in updates
+    if update.error
+      p.monitor-warning #{update.error}
+    else
+      p #{update.ip} is connecting [#{update.numberOfRoutes}] nodes via [#{update.numberOfGateways}] gateways.
 
   h2="diagram"
   img(src='diagram.jpg')

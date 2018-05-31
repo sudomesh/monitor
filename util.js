@@ -30,33 +30,6 @@ module.exports.processUpdate = function(req) {
 
 module.exports.nonZeroOrNA = nonZeroOrNA
 
-/**
- * Computes message for Jade template from data returned from memcache.
- */
-module.exports.messageFromCacheData = function(v) {
-  const d = (typeof v === 'string') ? JSON.parse(v) : v
-  //TODO differentiate null v, non-json v, etc.
-  if (d && d.error === undefined) {
-    //TODO What happens when parse fails?
-    return `${d.ip} is connecting [${d.numberOfRoutes}] nodes via [${d.numberOfGateways}] gateways.`;
-  } else {
-    return module.exports.noCheckInMessage(d.ip);
-  }
-}
-
-/**
- * Computes API response from data returned from memcache.
- */
-module.exports.jsonFromCacheData = function(v) {
-  //TODO differentiate null v, non-json v, etc.
-  if (v) {
-    //TODO What happens when parse fails?
-    return JSON.parse(v);
-  } else {
-    return { error: module.exports.noCheckInMessage };
-  }
-};
-
 module.exports.getRequestIP = function(req) {
   return (req.headers && req.headers['x-forwarded-for']) || (req.connection && req.connection.remoteAddress);
 };

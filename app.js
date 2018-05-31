@@ -79,6 +79,7 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
+    let updates = await getMonitorUpdates();
     let nodes = await getRoutingTableUpdates();
     
     // Sort routing tables by gateway
@@ -93,11 +94,9 @@ function MonitorApp ({
         });
       }
     });
-    
-    const data = await getMonitorUpdates();
 
     res.render('index', {
-      updates: data.map(util.messageFromCacheData),
+      updates: updates,
       nodes: nodes
     });
   }));

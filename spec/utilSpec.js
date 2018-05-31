@@ -27,12 +27,6 @@ describe("nonZeroOrNA", function () {
   });
 });
 
-describe("messageFromCacheData", function () {
-});
-
-describe("jsonFromCacheData", function () {
-});
-
 describe("getRequestIP", function () {
   it("returns n/a for negative numbers", function () {
     expect(u.getRequestIP({ headers: { "x-forwarded-for": "1234"}})).toBe("1234");
