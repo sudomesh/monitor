@@ -12,26 +12,25 @@ block content
     else
       p #{update.ip} is connecting [#{update.numberOfRoutes}] nodes via [#{update.numberOfGateways}] gateways.
 
-  h2="diagram"
+  h3="diagram"
   img(src='diagram.jpg')
 
-  h2="nodes"
-  if nodes
-    each node in nodes
-      h3= node.exitNodeIP
-      if node.routingTable
-        table.table
-          thead
-            tr
-              th='node'
-              th='gateway'
-              th='last seen'
-          tbody
-            each route in node.routingTable
-              if route.nodeIP && route.gatewayIP && route.timestamp
-                tr
-                  td=route.nodeIP
-                  td=route.gatewayIP
-                  td=route.timestamp
-      else
-        p= node.error
+  h3="nodes"
+  each node in nodes
+    h4= node.exitNodeIP
+    if node.routingTable
+      table.table
+        thead
+          tr
+            th='node'
+            th='gateway'
+            th='last seen'
+        tbody
+          each route in node.routingTable
+            if route.nodeIP && route.gatewayIP && route.timestamp
+              tr
+                td=route.nodeIP
+                td=route.gatewayIP
+                td=route.timestamp
+    else
+      p(style='margin-bottom: 20px')= node.error
