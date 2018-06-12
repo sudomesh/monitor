@@ -13,7 +13,8 @@ block content
       p #{update.ip} is connecting [#{update.numberOfRoutes}] nodes via [#{update.numberOfGateways}] gateways.
 
   h3="diagram"
-  img(src='diagram.jpg')
+  p A diagram of the network topology from the (limited) perspective of the exitnodes. Central hubs are exitnodes, one hop away are the gateway homenodes, and two hops away are extender nodes and meshing homenodes.
+  canvas(id='network-plot', width='680px', height='300px')
 
   h3="nodes"
   each node in nodes
