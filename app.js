@@ -131,7 +131,8 @@ function MonitorApp ({
     res.json(data);
   }));
 
-  app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(), function (req, res) {
+  app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(),
+	   asyncMiddleware(async function (req, res) {
     let ip = util.getRequestIP(req);
     let key = `routing-table-${ip}`;
     let routeString = req.body;
@@ -144,7 +145,7 @@ function MonitorApp ({
     }
 
     let now = new Date();
-    let nodes = routeString.split('|').map((route) => {
+    let newRoutes = routeString.split('|').map((route) => {
       let [nodeIP, gatewayIP] = route.split(',');
       return {
         "timestamp": now,
@@ -152,6 +153,23 @@ function MonitorApp ({
         "gatewayIP": gatewayIP
       };
     });
+
+    // Merge new routes with old routes (if we have any).
+    // Routes are keyed on nodeIP (i.e. the route destination). This means
+    // we overwrite old routes when the gateway changes, so long as the destination
+    // remains the same.
+    let oldRoutingTables = await getRoutingTableUpdates();
+    let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitNodeIP === ip);
+    if (oldRoutingTable && oldRoutingTable.routingTable) {
+	let oldRoutes = oldRoutingTable.routingTable;
+	for (let oldRoute of oldRoutes) {
+	    if (newRoutes.find((r) => r.nodeIP === oldRoute.nodeIP)) {
+		continue;
+	    } else {
+		newRoutes.push(oldRoute);
+	    }
+	}
+    }
     
     let handleErr = function(err) {
       if (err) {
@@ -160,12 +178,12 @@ function MonitorApp ({
       }
       return res.json({
           "message": "It Worked!",
-          "data": nodes
+          "data": newRoutes 
       });
     };
     
-    mjs.set(key, JSON.stringify(nodes), {}, handleErr);
-  });
+    mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
+  }));
 
   // Error Handlers
   app.use((err, req, res, next) => {
