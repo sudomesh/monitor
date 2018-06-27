@@ -1,17 +1,14 @@
 (function() {
-  let canvas = document.getElementById('network-plot'),
-      ctx = canvas.getContext('2d');
-
+  let svg = d3.select('#network-plot-svg');
+  let svgWidth = svg.node().getBoundingClientRect().width,
+      svgHeight = svg.node().getBoundingClientRect().height;
+  let htmlContainer = d3.select('#network-plot-html');
+  
   init();
 
   function init() {
     // This is the entry point. Get route table from API,
     // convert to list of nodes and links, then render.
-    
-    // If there's no canvas, don't do anything.
-    if (!canvas)
-      return;
-
     fetch('/api/v0/nodes')
       .then((response) => response.json())
       .then((routeTables) => routesToLinksAndNodes(routeTables))
@@ -24,29 +21,131 @@
     simulation
       .force('link', d3.forceLink(links).id((d) => d.ip))
       .force('charge', d3.forceManyBody().distanceMax(150));
+    
+    //
+    // Hover tooltip
+    //
+
+    // Note: using HTML instead of SVG for the tooltip because
+    // styling text is easier.
+    let tooltipGroup = htmlContainer.append('div')
+      .attr('class', 'tooltip-group')
+      .style('position', 'absolute')
+      .style('top', '0px')
+      .style('display', 'none');
+    
+    let tooltipText = tooltipGroup.append('div')
+      .attr('class', 'tooltip-text')
+      .style('margin-left', '15px')
+      .style('padding', '5px 7px')
+      .style('border', '1px solid')
+      .style('background', 'rgba(255, 255, 255, 0.8)')
+      .style('font-family', 'monospace')
+      .style('transform', 'translate(0px, -50%)');
+
+    let showTooltip = (node) => {
+      tooltipText.text(node.ip);
+      tooltipGroup
+        .style('transform', `translate(${node.x}px, ${node.y}px)`)
+        .style('display', 'block');
+    };
+
+    let hideTooltip = () => {
+      tooltipGroup.style('display', 'none');
+    };
+
+    //
+    // Exit node labels
+    //
+
+    let exitnodeLabelGroup = htmlContainer.append('div')
+      .attr('class', 'exitnode-labels')
+      .style('position', 'absolute')
+      .style('top', '0px');
+
+    exitnodeLabelGroup.selectAll('.exitnode-label')
+      .data(nodes.filter((n) => n.type === 'exitnode'))
+      .enter()
+      .append('div')
+      .attr('class', 'exitnode-label')
+      .text((node) => node.ip)
+      .style('font-family', 'monospace')
+      .style('position', 'absolute')
+      .style('text-align', 'center')
+      .style('transform', 'translate(-50%, -100%)');
+
+    //
+    // Render links
+    //
+
+    let linkGroup = svg.append('g').attr('class', 'links');
+    let linkEls = linkGroup.selectAll('.link').data(links);
+    let newLinkEls = linkEls
+      .enter().append('line')
+        .attr('class', 'link')
+        .attr('stroke-width', 1)
+        .attr('stroke', 'steelblue');
+
+    //
+    // Render nodes
+    //
+
+    let nodeGroup = svg.append('g').attr('class', 'nodes');
+    let nodeEls = nodeGroup.selectAll('.node-container').data(nodes);
+    let newNodeEls = nodeEls
+      .enter()
+      .append('g')
+        .attr('class', 'node-container')
+
+    newNodeEls.append('circle')
+      .attr('class', 'hover-target')
+      .attr('r', '15')
+      .attr('fill', 'white')
+      .attr('visibility', 'hidden')
+      .attr('pointer-events', 'all');
+
+    newNodeEls.append('circle')
+      .attr('class', 'outer-circle')
+      .attr('r', 8)
+      .attr('fill', 'white');
+
+    newNodeEls.append('circle')
+      .attr('class', 'inner-circle')
+      .attr('r', 5)
+      .attr('fill', 'black');
+
+    newNodeEls.on('mouseover', function(node) {
+      d3.select(this).select('.outer-circle')
+        .attr('stroke', 'black');
+      showTooltip(node);
+    });
+
+    newNodeEls.on('mouseout', function(node) {
+      d3.select(this).select('.outer-circle')
+        .attr('stroke', 'none');
+      hideTooltip();
+    });
+
+
+    //
+    // Update svg element positions
+    //
 
     simulation.on('tick', () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      let linkEls = linkGroup.selectAll('.link').data(links);
+      linkEls
+        .attr('x1', (link) => link.source.x)
+        .attr('y1', (link) => link.source.y)
+        .attr('x2', (link) => link.target.x)
+        .attr('y2', (link) => link.target.y);
+      
+      let nodeEls = nodeGroup.selectAll('.node-container').data(nodes);
+      nodeEls.attr('transform', (node) => `translate(${node.x} ${node.y})`);
 
-      links.forEach((link) => {
-        ctx.beginPath();
-        ctx.moveTo(link.source.x, link.source.y);
-        ctx.lineTo(link.target.x, link.target.y);
-        ctx.strokeStyle = '#aaa';
-        ctx.stroke();
-      });
-
-      nodes.forEach((node) => {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, 5, 0, Math.PI * 2);
-        ctx.fill();
-
-        if (node.type === 'exitnode') {
-          ctx.font = '12px monospace';
-          ctx.textAlign = 'center';
-          ctx.fillText(node.ip, node.x, canvas.height - 10);
-        }
-      });
+      exitnodeLabelGroup.selectAll('.exitnode-label')
+        .data(nodes.filter((node) => node.type === 'exitnode'))
+        .style('left', (node) => `${node.x}px`)
+        .style('top', `${svgHeight}px`);
     });
   }
 
@@ -123,8 +222,8 @@
       return {
         ip: ip,
         // init the x position of exitnodes so they end up spaced out horizontally
-        fx: (idx + 1) * canvas.width / (exitnodeIPs.length + 1),
-        fy: canvas.height / 2,
+        fx: (idx + 1) * svgWidth / (exitnodeIPs.length + 1),
+        fy: svgHeight / 2,
         type: 'exitnode'
       };
     });

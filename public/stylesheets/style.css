@@ -65,3 +65,12 @@ a {
 .monitor-warning {
   color: #efaa2e;
 }
+.network-plot-container {
+  position: relative;
+}
+.network-plot-container #network-plot-html {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  pointer-events: none;
+}
