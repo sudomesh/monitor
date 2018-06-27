@@ -14,7 +14,9 @@ block content
 
   h3="diagram"
   p A diagram of the network topology from the (limited) perspective of the exitnodes. Central hubs are exitnodes, one hop away are the gateway homenodes, and two hops away are extender nodes and meshing homenodes.
-  canvas(id='network-plot', width='680px', height='300px')
+  div(class='network-plot-container')
+    svg(id='network-plot-svg', width='680px', height='300px')
+    div(id='network-plot-html')
 
   h3="nodes"
   each node in nodes
