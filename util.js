@@ -38,7 +38,9 @@ module.exports.timeAgo = function(timestamp) {
   let now = new Date(),
       then = new Date(timestamp);
   let delta = now - then;
-  if (delta > 3600000) {
+  if (delta > 86400000) {
+    return `${Math.floor(delta / 86400000)} days ago`;
+  } else if (delta > 3600000) {
     return `${Math.floor(delta / 3600000)} hours ago`;
   } else if (delta > 60000) {
     return `${Math.floor(delta / 60000)} minutes ago`;
