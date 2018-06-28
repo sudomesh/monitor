@@ -150,6 +150,20 @@
   }
 
   function routesToLinksAndNodes(routeTables) {
+    // for debugging
+    window.routeTables = routeTables;
+    
+    // Filter out routes that we haven't seen in the last X minutes
+    let now = new Date();
+    for (let table of routeTables) {
+      if (table.error) {
+        continue;
+      }
+      table.routingTable = table.routingTable.filter((route) => {
+        return (now - new Date(route.timestamp)) < 1000 * 60 * 3;
+      });
+    }
+
     // First, the links between exitnodes and gateways
     let exitnodeLinks = [];
     for (let table of routeTables) {
