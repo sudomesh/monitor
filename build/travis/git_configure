@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+git config --local user.name "Travis CI"
+git config --local user.email "travis-ci@sudomesh.org"
+
+if ! [ -z "$GITHUB_SSH_KEY_PRIVATE" ]; then
+    mkdir -p ~/.ssh
+    echo "$GITHUB_SSH_KEY_PRIVATE" > ~/.ssh/github_ssh_key
+    chmod 600 ~/.ssh/github_ssh_key
+fi
