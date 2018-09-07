@@ -23,6 +23,7 @@
     "less-middleware": "0.1.15",
     "memjs": "1.1.0",
     "morgan": "~1.0.0",
+    "underscore": "1.9.1",
     "winston": "0.7.3"
   },
   "devDependencies": {

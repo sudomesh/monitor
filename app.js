@@ -4,6 +4,8 @@ var logger = require('morgan');
 var path = require('path');
 var winston = require('winston');
 var memjs = require('memjs').Client;
+var _ = require('underscore');
+
 var util = require('./util');
 
 const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';  
@@ -79,24 +81,25 @@ function MonitorApp ({
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
     let updates = await getMonitorUpdates();
-    let nodes = await getRoutingTableUpdates();
+    let exitNodes = await getRoutingTableUpdates();
     
-    // Sort routing tables by gateway
-    nodes.forEach(node => {
-      if (node.routingTable) {
-        node.routingTable.sort((nodeA, nodeB) => {
-          if (nodeA.gatewayIP < nodeB.gatewayIP)
-            return -1;
-          if (nodeA.gatewayIP > nodeB.gatewayIP)
-            return 1;
-          return 0;
+    exitNodes.forEach(exitNode => {
+      if (exitNode.routingTable) {
+        // Sort routing tables by gateway
+        exitNode.routingTable = _.sortBy(exitNode.routingTable, (node) => {
+          return node.gatewayIP;
+        });
+        
+        // Sort routing tables by timestamp descending 
+        exitNode.routingTable = _.sortBy(exitNode.routingTable, (node) => {
+          return -1 * new Date(node.timestamp);
         });
       }
     });
 
     res.render('index', {
       updates: updates,
-      nodes: nodes,
+      nodes: exitNodes,
       timeAgo: util.timeAgo
     });
   }));
