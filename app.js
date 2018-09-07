@@ -132,7 +132,7 @@ function MonitorApp ({
   }));
 
   app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(),
-	   asyncMiddleware(async function (req, res) {
+           asyncMiddleware(async function (req, res) {
     let ip = util.getRequestIP(req);
     let key = `routing-table-${ip}`;
     let routeString = req.body;
@@ -161,14 +161,14 @@ function MonitorApp ({
     let oldRoutingTables = await getRoutingTableUpdates();
     let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitNodeIP === ip);
     if (oldRoutingTable && oldRoutingTable.routingTable) {
-	let oldRoutes = oldRoutingTable.routingTable;
-	for (let oldRoute of oldRoutes) {
-	    if (newRoutes.find((r) => r.nodeIP === oldRoute.nodeIP)) {
-		continue;
-	    } else {
-		newRoutes.push(oldRoute);
-	    }
-	}
+      let oldRoutes = oldRoutingTable.routingTable;
+      for (let oldRoute of oldRoutes) {
+        if (newRoutes.find((r) => r.nodeIP === oldRoute.nodeIP)) {
+          continue;
+        } else {
+          newRoutes.push(oldRoute);
+        }
+      }
     }
     
     let handleErr = function(err) {
