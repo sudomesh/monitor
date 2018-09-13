@@ -24,6 +24,7 @@ function MonitorApp ({
   // Only ips in this list are allowed to POST monitor updates
   exitNodeIPs=['45.34.140.42', '64.71.176.94'],
   mjs=memjs.create(),
+  db=null,
 }={}) {
   app.use(express.urlencoded());
   app.use(express.json());
