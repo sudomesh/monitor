@@ -196,6 +196,37 @@ function MonitorApp ({
       // can omit timestamp from each route object since they're all the same
       'routes': newRoutes.map((r) => _.omit(r, 'timestamp'))
     });
+
+  }));
+
+  app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
+    let numNodes = [];
+    let numGateways = [];
+    let timestamps = [];
+    
+    let now = new Date();
+    let yesterday = new Date(now - 1000 * 60 * 60 * 24);
+    let toDate = now;
+    let fromDate = yesterday;
+    if (req.query.from)
+      fromDate = new Date(req.query.from);
+    if (req.query.to)
+      toDate = new Date(req.query.to);
+
+    await db.collection('routeLog')
+      .find({
+        timestamp: {
+          '$lt': toDate,
+          '$gte': fromDate
+        }
+      })
+      .forEach((routeLog) => {
+        timestamps.push(routeLog.timestamp);
+        numGateways.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
+        numNodes.push(_.unique(routeLog.routes, (route) => route.nodeIP).length);
+      });
+
+    res.json({ numNodes, numGateways, timestamps });
   }));
 
   // Error Handlers
