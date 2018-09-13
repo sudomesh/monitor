@@ -186,7 +186,16 @@ function MonitorApp ({
       });
     };
     
+    // Store in memcache db
+    // TODO: deprecate memcache db. just use mongo for everything.
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
+    
+    // Add new routes to mongo db log. Used for generating timeseries.
+    db.collection('routeLog').insertOne({
+      'timestamp': now,
+      // can omit timestamp from each route object since they're all the same
+      'routes': newRoutes.map((r) => _.omit(r, 'timestamp'))
+    });
   }));
 
   // Error Handlers
