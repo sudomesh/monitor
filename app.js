@@ -220,6 +220,7 @@ function MonitorApp ({
           '$gte': fromDate
         }
       })
+      .sort({ timestamp: 1 })
       .forEach((routeLog) => {
         timestamps.push(routeLog.timestamp);
         numGateways.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
