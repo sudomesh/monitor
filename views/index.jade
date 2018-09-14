@@ -12,7 +12,12 @@ block content
     else
       p #{update.ip} is connecting [#{update.numberOfRoutes}] nodes via [#{update.numberOfGateways}] gateways.
 
-  h3="diagram"
+  h3="node history"
+  p A plot of the number of connected #[span.node-blue nodes] and #[span.gateway-purple gateways] in the last 24 hours.
+  div(class='node-history-plot-container')
+    svg(id='node-history-plot-svg', width='680px', height='300px')
+
+  h3="network diagram"
   p A diagram of the network topology from the (limited) perspective of the exitnodes. Central hubs are exitnodes, one hop away are the gateway homenodes, and two hops away are extender nodes and meshing homenodes.
   div(class='network-plot-container')
     svg(id='network-plot-svg', width='680px', height='300px')
