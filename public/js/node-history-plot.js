@@ -17,29 +17,29 @@
     // convert to list of nodes and links, then render.
     fetch('/api/v0/numNodesTimeseries')
       .then((response) => response.json())
-      .then(({ numGateways, numNodes, timestamps }) => render(numGateways, numNodes, timestamps));
+      .then(({ gatewayCounts, nodeCounts, timestamps }) => render(gatewayCounts, nodeCounts, timestamps));
   }
 
-  function render(numGateways, numNodes, timestamps) {
+  function render(gatewayCounts, nodeCounts, timestamps) {
     timestamps = timestamps.map((t) => new Date(t));
     
     let xScale = window.xScale = d3.scaleTime()
       .domain(d3.extent(timestamps))
       .range([0, plotWidth]);
     let yScale = window.yScale = d3.scaleLinear()
-      .domain([0, d3.max(Array.prototype.concat(numGateways, numNodes))])
+      .domain([0, d3.max(Array.prototype.concat(gatewayCounts, nodeCounts))])
       .range([plotHeight, 0]);
     let mainGroup = svg.append('g')
       .attr('transform', `translate(${plotMargin}, ${plotMargin})`);
 
-    let nodeData = _.zip(timestamps, numNodes).map((el) => {
+    let nodeData = _.zip(timestamps, nodeCounts).map((el) => {
       return {
         timestamp: el[0],
         value: el[1]
       };
     });
 
-    let gatewayData = _.zip(timestamps, numGateways).map((el) => {
+    let gatewayData = _.zip(timestamps, gatewayCounts).map((el) => {
       return {
         timestamp: el[0],
         value: el[1]

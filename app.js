@@ -205,8 +205,8 @@ function MonitorApp ({
   }));
 
   app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
-    let numNodes = [];
-    let numGateways = [];
+    let nodeCounts = [];
+    let gatewayCounts = [];
     let timestamps = [];
     
     let now = new Date();
@@ -228,11 +228,11 @@ function MonitorApp ({
       .sort({ timestamp: 1 })
       .forEach((routeLog) => {
         timestamps.push(routeLog.timestamp);
-        numGateways.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
-        numNodes.push(_.unique(routeLog.routes, (route) => route.nodeIP).length);
+        gatewayCounts.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
+        nodeCounts.push(_.unique(routeLog.routes, (route) => route.nodeIP).length);
       });
 
-    res.json({ numNodes, numGateways, timestamps });
+    res.json({ nodeCounts, gatewayCounts, timestamps });
   }));
 
   // Error Handlers
