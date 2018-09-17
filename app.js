@@ -12,9 +12,7 @@ const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
-// Continue exporting an instance for now for back compat, but consider exporting MonitorApp factory instead
-module.exports = MonitorApp();
-module.exports.MonitorApp = MonitorApp
+module.exports.MonitorApp = MonitorApp;
 
 /**
  * Create an http request listener (and express app) for the PON Monitor App
@@ -24,8 +22,15 @@ function MonitorApp ({
   // Only ips in this list are allowed to POST monitor updates
   exitNodeIPs=['45.34.140.42', '64.71.176.94'],
   mjs=memjs.create(),
-  db=null,
+  db=undefined,
 }={}) {
+
+  if (!db) {
+    console.error('ERROR: MonitorApp needs a db.')
+    process.exit(1);
+    return;
+  }
+
   app.use(express.urlencoded());
   app.use(express.json());
   app.set('views', path.join(__dirname, 'views'));
