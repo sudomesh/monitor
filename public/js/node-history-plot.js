@@ -46,8 +46,6 @@
       };
     });
 
-    console.log(nodeData, gatewayData);
-
     let line = d3.line()
       .x((d) => xScale(d.timestamp))
       .y((d) => yScale(d.value));
