@@ -1,20 +1,17 @@
-require('dotenv').config();
-
-const MongoClient = require('mongodb').MongoClient;
 const supertest = require('supertest');
 const application = require('../app');
 const MonitorApp = require('../app').MonitorApp
+const getDB = require('../db');
 
 describe('HTTP tests', function() {
 
   let db;
 
   beforeAll((done) => {
-    MongoClient.connect(process.env.MONGO_URL, { useNewUrlParser: true })
-      .then((client) => {
-        db = client.db();
-        done();
-      });
+    getDB().then((dbRef) => {
+      db = dbRef;
+      done();
+    });
   });
 
   describe('GET /', function () {
