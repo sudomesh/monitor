@@ -142,8 +142,8 @@ function MonitorApp ({
 
   app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(),
            asyncMiddleware(async function (req, res) {
-    let ip = util.getRequestIP(req);
-    let key = `routing-table-${ip}`;
+    let exitnodeIP = util.getRequestIP(req);
+    let key = `routing-table-${exitnodeIP}`;
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
     
@@ -163,12 +163,20 @@ function MonitorApp ({
       };
     });
 
+    // Add new routes to mongo db log. Used for generating timeseries.
+    db.collection('routeLog').insertOne({
+      'timestamp': now,
+      'exitnodeIP': exitnodeIP,
+      // can omit timestamp from each route object since they're all the same
+      'routes': newRoutes.map((r) => _.omit(r, 'timestamp'))
+    });
+
     // Merge new routes with old routes (if we have any).
     // Routes are keyed on nodeIP (i.e. the route destination). This means
     // we overwrite old routes when the gateway changes, so long as the destination
     // remains the same.
     let oldRoutingTables = await getRoutingTableUpdates();
-    let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitNodeIP === ip);
+    let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitNodeIP === exitnodeIP);
     if (oldRoutingTable && oldRoutingTable.routingTable) {
       let oldRoutes = oldRoutingTable.routingTable;
       for (let oldRoute of oldRoutes) {
@@ -194,21 +202,10 @@ function MonitorApp ({
     // Store in memcache db
     // TODO: deprecate memcache db. just use mongo for everything.
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
-    
-    // Add new routes to mongo db log. Used for generating timeseries.
-    db.collection('routeLog').insertOne({
-      'timestamp': now,
-      // can omit timestamp from each route object since they're all the same
-      'routes': newRoutes.map((r) => _.omit(r, 'timestamp'))
-    });
 
   }));
 
   app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
-    let nodeCounts = [];
-    let gatewayCounts = [];
-    let timestamps = [];
-    
     let now = new Date();
     let yesterday = new Date(now - 1000 * 60 * 60 * 24);
     let toDate = now;
@@ -218,21 +215,42 @@ function MonitorApp ({
     if (req.query.to)
       toDate = new Date(req.query.to);
 
-    await db.collection('routeLog')
-      .find({
-        timestamp: {
-          '$lt': toDate,
-          '$gte': fromDate
+    let exitnodes = await db.collection('routeLog')
+      .aggregate([
+        {
+          '$match': {
+            'timestamp': {
+              '$lt': toDate,
+              '$gte': fromDate
+            }    
+          }
+        },
+        { '$sort': { 'timestamp': 1 } },
+        {
+          '$group': {
+            '_id': '$exitnodeIP',
+            'timestamps': { $push: '$timestamp' },
+            'routeLogs': { $push: '$routes' }
+          }
         }
-      })
-      .sort({ timestamp: 1 })
-      .forEach((routeLog) => {
-        timestamps.push(routeLog.timestamp);
-        gatewayCounts.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
-        nodeCounts.push(_.unique(routeLog.routes, (route) => route.nodeIP).length);
-      });
+      ])
+      .toArray();
 
-    res.json({ nodeCounts, gatewayCounts, timestamps });
+    exitnodes = exitnodes.map((exitnode) => {
+      return {
+        exitnodeIP: exitnode._id,
+        timestamps: exitnode.timestamps,
+        // convert logs of route tables to counts of nodes/gateways
+        gatewayCounts: exitnode.routeLogs.map((routeLog) => {
+          return _.unique(routeLog, (route) => route.gatewayIP).length;
+        }),
+        nodeCounts: exitnode.routeLogs.map((routeLog) => {
+          return _.unique(routeLog, (route) => route.nodeIP).length;
+        })
+      }
+    });
+    
+    res.json(exitnodes);
   }));
 
   // Error Handlers
