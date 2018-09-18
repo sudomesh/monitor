@@ -1,6 +1,6 @@
 {
   "name": "sudomesh-monitor",
-  "version": "0.0.2",
+  "version": "0.0.1",
   "description": "Node.js app using express framework illustrating how to use MemCachier to cache computations",
   "author": "Sudo Mesh <info@sudomesh.org>",
   "license": "MIT",
@@ -18,12 +18,10 @@
   "dependencies": {
     "body-parser": "^1.18.2",
     "debug": "~0.7.4",
-    "dotenv": "6.0.0",
     "express": "~3.21.2",
     "jade": "~1.11.0",
     "less-middleware": "0.1.15",
     "memjs": "1.1.0",
-    "mongodb": "3.1.4",
     "morgan": "~1.0.0",
     "underscore": "1.9.1",
     "winston": "0.7.3"

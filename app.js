@@ -12,7 +12,9 @@ const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
-module.exports.MonitorApp = MonitorApp;
+// Continue exporting an instance for now for back compat, but consider exporting MonitorApp factory instead
+module.exports = MonitorApp();
+module.exports.MonitorApp = MonitorApp
 
 /**
  * Create an http request listener (and express app) for the PON Monitor App
@@ -22,15 +24,7 @@ function MonitorApp ({
   // Only ips in this list are allowed to POST monitor updates
   exitNodeIPs=['45.34.140.42', '64.71.176.94'],
   mjs=memjs.create(),
-  db=undefined,
 }={}) {
-
-  if (!db) {
-    console.error('ERROR: MonitorApp needs a db.')
-    process.exit(1);
-    return;
-  }
-
   app.use(express.urlencoded());
   app.use(express.json());
   app.set('views', path.join(__dirname, 'views'));
@@ -191,48 +185,7 @@ function MonitorApp ({
       });
     };
     
-    // Store in memcache db
-    // TODO: deprecate memcache db. just use mongo for everything.
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
-    
-    // Add new routes to mongo db log. Used for generating timeseries.
-    db.collection('routeLog').insertOne({
-      'timestamp': now,
-      // can omit timestamp from each route object since they're all the same
-      'routes': newRoutes.map((r) => _.omit(r, 'timestamp'))
-    });
-
-  }));
-
-  app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
-    let nodeCounts = [];
-    let gatewayCounts = [];
-    let timestamps = [];
-    
-    let now = new Date();
-    let yesterday = new Date(now - 1000 * 60 * 60 * 24);
-    let toDate = now;
-    let fromDate = yesterday;
-    if (req.query.from)
-      fromDate = new Date(req.query.from);
-    if (req.query.to)
-      toDate = new Date(req.query.to);
-
-    await db.collection('routeLog')
-      .find({
-        timestamp: {
-          '$lt': toDate,
-          '$gte': fromDate
-        }
-      })
-      .sort({ timestamp: 1 })
-      .forEach((routeLog) => {
-        timestamps.push(routeLog.timestamp);
-        gatewayCounts.push(_.unique(routeLog.routes, (route) => route.gatewayIP).length);
-        nodeCounts.push(_.unique(routeLog.routes, (route) => route.nodeIP).length);
-      });
-
-    res.json({ nodeCounts, gatewayCounts, timestamps });
   }));
 
   // Error Handlers
