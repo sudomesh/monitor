@@ -1,3 +1,8 @@
 language: node_js
 node_js:
-- '7.10.1'
+  - '7.10.1'
+services: mongodb
+before_script:
+  - sleep 10
+  - cp prod.env .env
+  - node setup-db.js
