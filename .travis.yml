@@ -1,6 +1,7 @@
 language: node_js
 node_js:
-- '7.10.1'
+  - '7.10.1'
 services: mongodb
 before_script:
-- node setup-db.js
+  - sleep 10
+  - node setup-db.js
