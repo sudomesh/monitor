@@ -10,6 +10,71 @@ Uses memcache/memjs and is supposed to run on heroku.
 
 Leaves much room for improvement ;) 
 
+## Running locally 
+
+Step-by-step guide.
+
+#### 0. install deps
+
+```
+sudo apt-get install memcached mongodb
+``` 
+
+#### 1. clone this repository
+
+Open a terminal, install git and clone this repository using:
+
+```
+cd [your projects directory]
+git clone https://github.com/sudomesh/monitor
+cd monitor
+```
+
+This should create a new directory called   `monitor` in your projects directory.
+
+#### 2. install node dependencies 
+
+```
+npm install
+```
+
+#### 3. copy some configuration files
+
+```
+cp dev.env .env
+```
+
+#### 4. start memcached
+
+```
+memcached -v
+```
+
+#### 5. start mongodb
+
+```
+mongod --dbpath=data
+```
+
+This will create a folder in `monitor` called `data` where mongo writes all of its database files.
+
+#### 6. setup mongodb
+
+```
+node setup-db.py
+```
+
+#### 7. launch the app locally using `npm start`
+
+Check whether your app launched properly by going to http://localhost:3000 in your favorite browser.
+
+By default, you should see a notification that the exit node is down. To simulate exit node activity, open a commandline in the monitor directory and execute `nodejs ./simulate-activity.js`. This script sets a key-value pair on memcache in such a way that the monitor page gets all like "hey, this exit node is alive!"
+
+After running this, reload your local monitor page and the page should indicate that the exit monitor is up. After 2 minutes, this is no longer the case, because the activity metrics expire.
+
+
+For more information, see https://devcenter.heroku.com/articles/memcachier#local-usage .
+
 ## Running tests
 
 To run tests, first install jasmine using ```npm install jasmine -g```. Then, you can run the tests using ```npm test```.
@@ -51,49 +116,6 @@ To push to current production server, get access push access and add the followi
 url = https://git.heroku.com/peoplesopen.git
 fetch = +refs/heads/*:refs/remotes/heroku/*
 ```
-
-## Running locally 
-
-Step-by-step guide.
-
-0. install memcached using
-
-```sudo apt-get install memcached``` 
-
-1. clone this repository
-
-Open a terminal, install git and clone this repository using:
-
-```
-cd [your projects directory]
-git clone https://github.com/sudomesh/monitor
-cd monitor
-```
-
-This should create a new directory called ```monitor``` in your projects directory.
-
-2. install node dependencies 
-
-run ```npm install``` to install node dependencies.
-
-3. copy some configuration files
-
-```cp dev.env .env```
-
-4. start memcached
-
-```memcached -v```
-
-5. launch the app locally using `npm start`
-
-Check whether your app launch properly by going to https://localhost:3000 in your favorite browser.
-
-By default, you should see a notification that the exit node is down. To simulate exit node activity, open a commandline in the monitor directory and execute ```nodejs ./simulate-activity.js```. This script sets a key-value pair on memcache in such a way that the monitor page gets all like "hey, this exit node is alive!"
-
-After running this, reload your local monitor page and the page should indicate that the exit monitor is up. After 2 minutes, this is no longer the case, because the activity metrics expire.
-
-
-For more information, see https://devcenter.heroku.com/articles/memcachier#local-usage .
 
 
 ## Get involved!
