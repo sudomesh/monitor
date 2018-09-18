@@ -1,6 +1,6 @@
 var request = require('request');
 var env = require('node-env-file');
-var exitnodeIp = '45.34.140.42';
+var exitnodeIPs = ['45.34.140.42', '64.71.176.94'];
 
 env(__dirname + '/.env');
 
@@ -17,13 +17,15 @@ if (require.main === module) {
 
 async function main() {
   return Promise.all([
-    simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 21 }),
-    simulateRoutingTableRequest('129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|')
+    simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 21 }, exitnodeIPs[0]),
+    simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 29 }, exitnodeIPs[1]),
+    simulateRoutingTableRequest('129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|', exitnodeIPs[0]),
+    simulateRoutingTableRequest('122.0.0.0/26,129.0.0.1|125.0.0.0/26,124.0.0.1|121.0.0.0/26,121.0.0.1|', exitnodeIPs[1])
   ])
 }
 
-async function simulateMonitorRequest(data) {
-  const response = await monitorRequest(data)
+async function simulateMonitorRequest(data, exitnodeIP) {
+  const response = await monitorRequest(data, exitnodeIP)
   switch (response.statusCode) {
     case 200:
       console.info(`Successful /monitor request`)
@@ -33,14 +35,14 @@ async function simulateMonitorRequest(data) {
   }
 }
 
-async function monitorRequest(data) {
+async function monitorRequest(data, exitnodeIP) {
   return new Promise((resolve, reject) => {
     var options = {
       url: `http://localhost:${process.env.PORT}/api/v0/monitor`,
       // the server authenticates the request by looking at
       // its source ip or x-forwarded-for header
       headers: {
-        'x-forwarded-for': exitnodeIp,
+        'x-forwarded-for': exitnodeIP,
         'content-type': 'application/json'
       },
       body: (typeof data === 'object') ? JSON.stringify(data) : data
@@ -52,8 +54,8 @@ async function monitorRequest(data) {
   })  
 }
 
-async function simulateRoutingTableRequest(body) {
-  const response = await routingTableRequest(body)
+async function simulateRoutingTableRequest(body, exitnodeIP) {
+  const response = await routingTableRequest(body, exitnodeIP)
   switch (response.statusCode) {
     case 200:
       console.info(`Successful /routing-table request`)
@@ -63,12 +65,12 @@ async function simulateRoutingTableRequest(body) {
   }
 }
 
-async function routingTableRequest(body) {
+async function routingTableRequest(body, exitnodeIP) {
   return new Promise((resolve, reject) => {
     const options = {
       url: `http://localhost:${process.env.PORT}/api/v0/nodes`,
       headers: {
-        'x-forwarded-for': exitnodeIp,
+        'x-forwarded-for': exitnodeIP,
         'content-type': 'text/plain'
       },
       body

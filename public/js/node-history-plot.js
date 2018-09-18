@@ -13,38 +13,32 @@
   init();
 
   function init() {
-    // This is the entry point. Get route table from API,
-    // convert to list of nodes and links, then render.
     fetch('/api/v0/numNodesTimeseries')
       .then((response) => response.json())
-      .then(({ gatewayCounts, nodeCounts, timestamps }) => render(gatewayCounts, nodeCounts, timestamps));
+      .then((exitnodes) => render(exitnodes));
   }
 
-  function render(gatewayCounts, nodeCounts, timestamps) {
-    timestamps = timestamps.map((t) => new Date(t));
+  function render(exitnodes) {
+    // debug
+    window.exitnodes = exitnodes;
+    console.debug(exitnodes);
+
+    // convert all timestamp strings to Date objects
+    for (let exitnode of exitnodes) {
+      exitnode.timestamps = exitnode.timestamps.map((t) => new Date(t));
+    }
     
     let xScale = window.xScale = d3.scaleTime()
-      .domain(d3.extent(timestamps))
+      .domain(d3.extent(_.flatten(_.pluck(exitnodes, 'timestamps'))))
       .range([0, plotWidth]);
     let yScale = window.yScale = d3.scaleLinear()
-      .domain([0, d3.max(Array.prototype.concat(gatewayCounts, nodeCounts))])
+      .domain([0, d3.max(Array.prototype.concat(
+        _.flatten(_.pluck(exitnodes, 'gatewayCounts')),
+        _.flatten(_.pluck(exitnodes, 'nodeCounts'))
+      ))])
       .range([plotHeight, 0]);
     let mainGroup = svg.append('g')
       .attr('transform', `translate(${plotMargin}, ${plotMargin})`);
-
-    let nodeData = _.zip(timestamps, nodeCounts).map((el) => {
-      return {
-        timestamp: el[0],
-        value: el[1]
-      };
-    });
-
-    let gatewayData = _.zip(timestamps, gatewayCounts).map((el) => {
-      return {
-        timestamp: el[0],
-        value: el[1]
-      };
-    });
 
     let line = d3.line()
       .x((d) => xScale(d.timestamp))
@@ -64,25 +58,56 @@
         .attr('y', -26)
         .attr('x', -plotHeight / 2)
         .attr('font-size', '14px')
-        // .attr('dy', '0.71em')
         .attr('text-anchor', 'middle')
         .text('# nodes');
 
-    mainGroup.append('path')
-      .datum(nodeData)
-      .attr('class', 'node-blue')
-      .attr('fill', 'none')
-      // .attr('stroke', 'steelblue')
-      .attr('stroke-width', 1.5)
-      .attr('d', line);
+    let colors = ['steelblue', '#b85bdc', '#3eb2f3', '#adadad', 'black'];
+    exitnodes.forEach((exitnode, idx) => {
+      let nodeData = _.zip(exitnode.timestamps, exitnode.nodeCounts).map((el) => {
+        return {
+          timestamp: el[0],
+          value: el[1]
+        };
+      });
 
-    mainGroup.append('path')
-      .datum(gatewayData)
-      .attr('class', 'gateway-purple')
-      .attr('fill', 'none')
-      // .attr('stroke', '#b85bdc')
-      .attr('stroke-width', 1.5)
-      .attr('d', line);
+      let gatewayData = _.zip(exitnode.timestamps, exitnode.gatewayCounts).map((el) => {
+        return {
+          timestamp: el[0],
+          value: el[1]
+        };
+      });
+
+      let exitnodeColor = colors[Math.min(idx, colors.length)];
+
+      mainGroup.append('path')
+        .datum(nodeData)
+        .attr('fill', 'none')
+        .attr('stroke', exitnodeColor)
+        .attr('stroke-width', 1.5)
+        .attr('d', line);
+
+      mainGroup.append('text')
+        .text(exitnode.exitnodeIP)
+        .attr('x', 20 + idx * 130)
+        .attr('y', -20)
+        .attr('fill', exitnodeColor);
+
+      mainGroup.append('rect')
+        .attr('width', 10)
+        .attr('height', 10)
+        .attr('fill', exitnodeColor)
+        .attr('x', idx * 130)
+        .attr('y', -30);
+
+      // Could render gateways as a dashed line?
+      // mainGroup.append('path')
+      //   .datum(gatewayData)
+      //   .attr('fill', 'none')
+      //   .attr('stroke', exitnodeColor)
+      //   .attr('stroke-width', 1.5)
+      //   .attr('stroke-dasharray', '5, 10, 5')
+      //   .attr('d', line);
+    });
   }
 
 })();
