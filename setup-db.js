@@ -15,4 +15,6 @@ MongoClient.connect(process.env.MONGO_URL, { useNewUrlParser: true })
     console.log('Created routeLog collection index.');
     
     client.close();
-  }).catch((err) => console.error(err));
+  }).catch((err) => {
+    throw err;
+  });
