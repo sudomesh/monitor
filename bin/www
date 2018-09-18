@@ -1,15 +1,10 @@
 #!/usr/bin/env node
+var debug = require('debug')('monitor-app');
+var MonitorApp = require('../app').MonitorApp
+var app = MonitorApp()
 
-require('dotenv').config();
+app.set('port', process.env.PORT || 3000);
 
-const debug = require('debug')('monitor-app');
-const MonitorApp = require('../app').MonitorApp;
-const getDB = require('../db');
-
-getDB().then((db) => {
-  let app = MonitorApp({db});
-  app.set('port', process.env.PORT || 3000);
-  let server = app.listen(app.get('port'), function() {
-    debug('Express server listening on port ' + server.address().port);
-  });
+var server = app.listen(app.get('port'), function() {
+  debug('Express server listening on port ' + server.address().port);
 });
