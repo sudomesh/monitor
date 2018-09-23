@@ -6,6 +6,7 @@ var winston = require('winston');
 var memjs = require('memjs').Client;
 var _ = require('underscore');
 
+var defaultExitnodeIPs = require('./exitnodeIPs');
 var util = require('./util');
 
 const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';  
@@ -20,7 +21,7 @@ module.exports.MonitorApp = MonitorApp;
 function MonitorApp ({
   app=express(),
   // Only ips in this list are allowed to POST monitor updates
-  exitNodeIPs=['45.34.140.42', '64.71.176.94'],
+  exitnodeIPs=defaultExitnodeIPs,
   mjs=memjs.create(),
   db=undefined,
 }={}) {
@@ -55,7 +56,7 @@ function MonitorApp ({
   }
 
   async function getMonitorUpdates() {
-    return await Promise.all(exitNodeIPs.map(async ip => {
+    return await Promise.all(exitnodeIPs.map(async ip => {
       let d = await getCacheData(`alive-${ip}`);
       d = d ? d : { error: util.noCheckInMessage(ip) };
       d.ip = ip;
@@ -64,17 +65,17 @@ function MonitorApp ({
   }
 
   async function getRoutingTableUpdates() {
-    return await Promise.all(exitNodeIPs.map(async ip => {
+    return await Promise.all(exitnodeIPs.map(async ip => {
       let routingTable = await getCacheData(`routing-table-${ip}`);
       if (routingTable) {
         return {
           routingTable: routingTable,
-          exitNodeIP: ip
+          exitnodeIP: ip
         };
       } else {
         return {
           error: util.noCheckInMessage(ip),
-          exitNodeIP: ip
+          exitnodeIP: ip
         };
       }
     }));
@@ -87,17 +88,17 @@ function MonitorApp ({
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
     let updates = await getMonitorUpdates();
-    let exitNodes = await getRoutingTableUpdates();
+    let exitnodes = await getRoutingTableUpdates();
     
-    exitNodes.forEach(exitNode => {
-      if (exitNode.routingTable) {
+    exitnodes.forEach(exitnode => {
+      if (exitnode.routingTable) {
         // Sort routing tables by gateway
-        exitNode.routingTable = _.sortBy(exitNode.routingTable, (node) => {
+        exitnode.routingTable = _.sortBy(exitnode.routingTable, (node) => {
           return node.gatewayIP;
         });
         
         // Sort routing tables by timestamp descending 
-        exitNode.routingTable = _.sortBy(exitNode.routingTable, (node) => {
+        exitnode.routingTable = _.sortBy(exitnode.routingTable, (node) => {
           return -1 * new Date(node.timestamp);
         });
       }
@@ -105,7 +106,7 @@ function MonitorApp ({
 
     res.render('index', {
       updates: updates,
-      nodes: exitNodes,
+      nodes: exitnodes,
       timeAgo: util.timeAgo
     });
   }));
@@ -118,7 +119,7 @@ function MonitorApp ({
     res.json(await getMonitorUpdates());
   }));
 
-  app.post('/api/v0/monitor', ipAuthMiddleware(exitNodeIPs), function(req, res) {
+  app.post('/api/v0/monitor', ipAuthMiddleware(exitnodeIPs), function(req, res) {
     let ip = util.getRequestIP(req);
     const key = `alive-${ip}`;
     let handleErr = function(err) {
@@ -140,7 +141,7 @@ function MonitorApp ({
     res.json(data);
   }));
 
-  app.post('/api/v0/nodes', ipAuthMiddleware(exitNodeIPs), bodyParser.text(),
+  app.post('/api/v0/nodes', ipAuthMiddleware(exitnodeIPs), bodyParser.text(),
            asyncMiddleware(async function (req, res) {
     let exitnodeIP = util.getRequestIP(req);
     let key = `routing-table-${exitnodeIP}`;
@@ -176,7 +177,7 @@ function MonitorApp ({
     // we overwrite old routes when the gateway changes, so long as the destination
     // remains the same.
     let oldRoutingTables = await getRoutingTableUpdates();
-    let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitNodeIP === exitnodeIP);
+    let oldRoutingTable = oldRoutingTables.find((rt) => rt.exitnodeIP === exitnodeIP);
     if (oldRoutingTable && oldRoutingTable.routingTable) {
       let oldRoutes = oldRoutingTable.routingTable;
       for (let oldRoute of oldRoutes) {
@@ -263,18 +264,17 @@ function MonitorApp ({
     })
   })
 
-  app.exitNodeIPs = exitNodeIPs;
-  return app
+  return app;
 }
 
 // 
 // Middleware
 // 
 
-function ipAuthMiddleware (exitNodeIPs) {
+function ipAuthMiddleware (exitnodeIPs) {
   return (req, res, next) => {
     const ip = util.getRequestIP(req);
-    if (exitNodeIPs.includes(ip)) {
+    if (exitnodeIPs.includes(ip)) {
       console.log('Received update from exit node ' + ip);
       next();
     } else {
