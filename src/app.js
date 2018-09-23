@@ -34,11 +34,11 @@ function MonitorApp ({
 
   app.use(express.urlencoded());
   app.use(express.json());
-  app.set('views', path.join(__dirname, 'views'));
+  app.set('views', path.join(__dirname, '../views'));
   app.set('view engine', 'jade');
   app.use(logger('dev'));
-  app.use(require('less-middleware')({ src: path.join(__dirname, 'public') }));
-  app.use(express.static(path.join(__dirname, 'public')));
+  app.use(require('less-middleware')({ src: path.join(__dirname, '../public') }));
+  app.use(express.static(path.join(__dirname, '../public')));
   app.use(app.router);
 
   //

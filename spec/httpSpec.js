@@ -1,8 +1,7 @@
 const supertest = require('supertest');
-const application = require('../app');
-const MonitorApp = require('../app').MonitorApp
-const getDB = require('../db');
-const exitnodeIPs = require('../exitnodeIPs');
+const MonitorApp = require('../src/app').MonitorApp
+const getDB = require('../src/db');
+const exitnodeIPs = require('../src/exitnodeIPs');
 
 describe('HTTP tests', function() {
 
