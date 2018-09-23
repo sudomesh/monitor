@@ -174,7 +174,7 @@
       let uniqueGatewaysIPs = Array.from(new Set(gatewayIPs));
       let gatewayLinks = uniqueGatewaysIPs.map((gatewayIP) => {
         return {
-          source: table.exitNodeIP,
+          source: table.exitnodeIP,
           target: gatewayIP
         };
       })
@@ -219,7 +219,7 @@
     let links = Array.prototype.concat(exitnodeLinks, homenodeLinks);
 
     // Now the nodes themselves, one per unique ip address
-    let exitnodeIPs = routeTables.map((table) => table.exitNodeIP);
+    let exitnodeIPs = routeTables.map((table) => table.exitnodeIP);
     let homenodeIPs = links.map((r) => r.target);
     // remove dupes
     homenodeIPs = Array.from(new Set(homenodeIPs));

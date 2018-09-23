@@ -1,4 +1,4 @@
-const u = require("../util");
+const u = require("../src/util");
 
 describe("processUpdate", function () {
   // bad inputs

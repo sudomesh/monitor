@@ -1,8 +1,8 @@
 var request = require('request');
 var env = require('node-env-file');
-var exitnodeIPs = ['45.34.140.42', '64.71.176.94'];
+var exitnodeIPs = require('../src/exitnodeIPs');
 
-env(__dirname + '/.env');
+env(__dirname + '/../.env');
 
 if (require.main === module) {
   main()

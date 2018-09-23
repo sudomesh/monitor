@@ -3,8 +3,8 @@
 require('dotenv').config();
 
 const debug = require('debug')('monitor-app');
-const MonitorApp = require('../app').MonitorApp;
-const getDB = require('../db');
+const MonitorApp = require('../src/app').MonitorApp;
+const getDB = require('../src/db');
 
 getDB().then((db) => {
   let app = MonitorApp({db});

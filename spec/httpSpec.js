@@ -1,7 +1,7 @@
 const supertest = require('supertest');
-const application = require('../app');
-const MonitorApp = require('../app').MonitorApp
-const getDB = require('../db');
+const MonitorApp = require('../src/app').MonitorApp
+const getDB = require('../src/db');
+const exitnodeIPs = require('../src/exitnodeIPs');
 
 describe('HTTP tests', function() {
 
@@ -47,7 +47,7 @@ describe('HTTP tests', function() {
       let app = MonitorApp({db});
       supertest(app)
           .post('/api/v0/monitor')
-          .set('x-forwarded-for', app.exitNodeIPs[0])
+          .set('x-forwarded-for', exitnodeIPs[0])
           .accept('Content-Type', 'application/json')
           .expect({ error: 'Bad request' })
           .expect(400, done);

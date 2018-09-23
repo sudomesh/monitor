@@ -1,2 +1,2 @@
-release: node setup-db.js
+release: node tools/setup-db.js
 www: node bin/www

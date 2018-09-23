@@ -5,4 +5,4 @@ services: mongodb
 before_script:
   - sleep 10
   - cp prod.env .env
-  - node setup-db.js
+  - node tools/setup-db.js
