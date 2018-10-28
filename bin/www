@@ -4,9 +4,10 @@ require('dotenv').config();
 
 const debug = require('debug')('monitor-app');
 const MonitorApp = require('../src/app').MonitorApp;
-const getDB = require('../src/db');
+const getDBConnection = require('../src/db');
 
-getDB().then((db) => {
+getDBConnection().then((client) => {
+  let db = client.db();
   let app = MonitorApp({db});
   app.set('port', process.env.PORT || 3000);
   let server = app.listen(app.get('port'), function() {

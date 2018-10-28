@@ -1,6 +1,6 @@
 const supertest = require('supertest');
 const MonitorApp = require('../src/app').MonitorApp
-const getDB = require('../src/db');
+const getDBConnection = require('../src/db');
 const exitnodeIPs = require('../src/exitnodeIPs');
 
 describe('HTTP tests', function() {
@@ -8,8 +8,8 @@ describe('HTTP tests', function() {
   let db;
 
   beforeAll((done) => {
-    getDB().then((dbRef) => {
-      db = dbRef;
+    getDBConnection().then((client) => {
+      db = client.db();
       done();
     });
   });

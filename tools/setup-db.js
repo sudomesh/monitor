@@ -1,20 +1,19 @@
-require('dotenv').config({ path: __dirname + '/../.env' });
+const getDBConnection = require('../src/db');
 
-var MongoClient = require('mongodb').MongoClient;
+getDBConnection().then(async (client) => {
+  let db = client.db();
 
-MongoClient.connect(process.env.MONGO_URL, { useNewUrlParser: true })
-  .then(async (client) => {
-    let db = client.db();
-    
-    // Store no more than 400MB. One month's worth of exitnode logs
-    // is approx 21600 logs * 15KB/log = 324MB.
-    await db.createCollection('routeLog', { 'capped': true, size: 400000000 })
-    console.log('Created routeLog collection.');
-    
-    await db.collection('routeLog').createIndex({ timestamp: 1 });
-    console.log('Created routeLog collection index.');
-    
-    client.close();
-  }).catch((err) => {
-    throw err;
-  });
+  // Store no more than 200MB. One month's worth of exitnode logs
+  // is approx 21600 logs * 15KB/log = 324MB.
+  // The free mlab instance seems to cap out at ~320MB of documents.
+  await db.createCollection('routeLog', { 'capped': true, size: 200000000 });
+  console.log('Created routeLog collection.');
+  
+  await db.collection('routeLog').createIndex({ timestamp: 1 });
+  console.log('Created routeLog collection index.');
+
+  client.close();
+}).catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
