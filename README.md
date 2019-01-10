@@ -1,14 +1,14 @@
 # Peoples Open Network Monitor Page
 
-To help monitor network health. 
-
 [![Build Status](https://travis-ci.org/sudomesh/monitor.svg?branch=master)](https://travis-ci.org/sudomesh/monitor)
 
-Currently, exit node hits a url at https://peoplesopen.herokuapp.com using [monitor.sh](./monitor.sh) script. This relays information about the number of active routes and number of active gateways. If the exit node doesn't check-in for longer than 2 minutes, it is assumed to be down.
+To help monitor network health. 
 
-Uses memcache/memjs and is supposed to run on heroku.
+Exit nodes periodically execute [monitor.sh](./monitor.sh) and [post-routing-table.sh](./post-routing-table.sh), hitting two API endpoints at https://peoplesopen.herokuapp.com/api/v0/. This relays information about the number of active routes, active gateways, and the full contents of the exit node's routing table. If an exit node hasn't checked in in more than 2 minutes, it is assumed to be down.
 
-Leaves much room for improvement ;) 
+Uses memcache/memjs, and mongo db. Deployed to heroku.
+
+Leaves much room for improvement ;)
 
 ## Running locally 
 
