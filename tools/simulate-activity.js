@@ -20,7 +20,8 @@ async function main() {
     simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 21 }, exitnodeIPs[0]),
     simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 29 }, exitnodeIPs[1]),
     simulateRoutingTableRequest('129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|', exitnodeIPs[0]),
-    simulateRoutingTableRequest('122.0.0.0/26,129.0.0.1|125.0.0.0/26,124.0.0.1|121.0.0.0/26,121.0.0.1|', exitnodeIPs[1])
+    simulateRoutingTableRequest('122.0.0.0/26,129.0.0.1|125.0.0.0/26,124.0.0.1|121.0.0.0/26,121.0.0.1|', exitnodeIPs[1]),
+    simulateRoutingTableRequest('', exitnodeIPs[2]) // simulate an empty POST
   ])
 }
 

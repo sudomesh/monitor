@@ -155,14 +155,23 @@ function MonitorApp ({
     }
 
     let now = new Date();
-    let newRoutes = routeString.split('|').map((route) => {
-      let [nodeIP, gatewayIP] = route.split(',');
-      return {
-        "timestamp": now,
-        "nodeIP": nodeIP,
-        "gatewayIP": gatewayIP
-      };
-    });
+    let newRoutes = routeString.split('|')
+      .map((route) => {
+        let [nodeIP, gatewayIP] = route.split(',');
+        return {
+          "timestamp": now,
+          "nodeIP": nodeIP,
+          "gatewayIP": gatewayIP
+        };
+      })
+      .filter((route) => {
+        // Currently nodeIP and gatewayIP can be any non-whitespace-only strings.
+        // In the future, we might want to check that they are IP-like strings.
+        return route.nodeIP && 
+               route.nodeIP.trim() !== '' &&
+               route.gatewayIP &&
+               route.gatewayIP.trim() !== '';
+      });
 
     // Add new routes to mongo db log. Used for generating timeseries.
     db.collection('routeLog').insertOne({
