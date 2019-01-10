@@ -8,8 +8,6 @@
   let plotWidth = svgWidth - 2 * plotMargin,
       plotHeight = svgHeight - 2 * plotMargin;
 
-  svg.style('margin-left', `-${plotMargin + 5}px`);
-
   init();
 
   function init() {
