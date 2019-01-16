@@ -9,7 +9,7 @@ var _ = require('underscore');
 var defaultExitnodeIPs = require('./exitnodeIPs');
 var util = require('./util');
 
-const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';  
+const logFile = process.MONITOR_LOG_FILE || 'nodejs.log';
 // Setup log file for file uploads
 winston.add(winston.transports.File, { filename: logFile });
 
@@ -43,12 +43,12 @@ function MonitorApp ({
 
   //
   // DB Helpers
-  // 
+  //
 
   /**
    * Get a data object from memcache by key
    * @param {String} key - memcache key to read
-   * @returns {Object|undefined} - parsed Object from memcache. undefined if key is not in memcache 
+   * @returns {Object|undefined} - parsed Object from memcache. undefined if key is not in memcache
    */
   async function getCacheData(key) {
     const { value } = await mjs.get(key);
@@ -81,23 +81,23 @@ function MonitorApp ({
     }));
   }
 
-  // 
+  //
   // HTML Routes
-  // 
+  //
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
     let updates = await getMonitorUpdates();
     let exitnodes = await getRoutingTableUpdates();
-    
+
     exitnodes.forEach(exitnode => {
       if (exitnode.routingTable) {
         // Sort routing tables by gateway
         exitnode.routingTable = _.sortBy(exitnode.routingTable, (node) => {
           return node.gatewayIP;
         });
-        
-        // Sort routing tables by timestamp descending 
+
+        // Sort routing tables by timestamp descending
         exitnode.routingTable = _.sortBy(exitnode.routingTable, (node) => {
           return -1 * new Date(node.timestamp);
         });
@@ -111,9 +111,9 @@ function MonitorApp ({
     });
   }));
 
-  // 
+  //
   // API Routes
-  // 
+  //
 
   app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
     res.json(await getMonitorUpdates());
@@ -147,7 +147,7 @@ function MonitorApp ({
     let key = `routing-table-${exitnodeIP}`;
     let routeString = req.body;
     console.log(`Received routing table update: ${routeString}`);
-    
+
     // Trim trailing | if it exists. Consider changing post-routing-table.sh
     // to not send a trailing |?
     if (routeString.endsWith('|')) {
@@ -167,7 +167,7 @@ function MonitorApp ({
       .filter((route) => {
         // Currently nodeIP and gatewayIP can be any non-whitespace-only strings.
         // In the future, we might want to check that they are IP-like strings.
-        return route.nodeIP && 
+        return route.nodeIP &&
                route.nodeIP.trim() !== '' &&
                route.gatewayIP &&
                route.gatewayIP.trim() !== '';
@@ -197,7 +197,7 @@ function MonitorApp ({
         }
       }
     }
-    
+
     let handleErr = function(err) {
       if (err) {
           console.log("Error setting key: " + err);
@@ -205,10 +205,10 @@ function MonitorApp ({
       }
       return res.json({
           "message": "It Worked!",
-          "data": newRoutes 
+          "data": newRoutes
       });
     };
-    
+
     // Store in memcache db
     // TODO: deprecate memcache db. just use mongo for everything.
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
@@ -232,7 +232,7 @@ function MonitorApp ({
             'timestamp': {
               '$lt': toDate,
               '$gte': fromDate
-            }    
+            }
           }
         },
         { '$sort': { 'timestamp': 1 } },
@@ -245,6 +245,31 @@ function MonitorApp ({
         }
       ])
       .toArray();
+
+    let totals = exitnodes.reduce((total, node) => {
+      total.exitnodeIP = total.exitnodeIP || 'total';
+      total.timestamps = total.timestamps || node.timestamps;
+      if (total.routeLogs) {
+        total.routeLogs = total.routeLogs.map((routeLog, idx) => {
+          return routeLog.concat(node.routeLogs[idx]);
+        });
+      } else {
+        total.routeLogs = node.routeLogs;
+      }
+
+      total.gatewayCounts = total.routeLogs.map((routeLog) => {
+        return _.unique(routeLog, (route) => route.gatewayIP).length;
+      });
+
+      total.nodeCounts = total.routeLogs.map((routeLog) => {
+        return _.unique(routeLog, (route) => route.nodeIP).length;
+      });
+
+      return total;
+    }, {});
+
+    // Strip out routeLogs which was only used for aggregating unique totals:
+    let { routeLogs, ...totalObj } = totals;
 
     exitnodes = exitnodes.map((exitnode) => {
       return {
@@ -259,8 +284,8 @@ function MonitorApp ({
         })
       }
     });
-    
-    res.json(exitnodes);
+
+    res.json(exitnodes.concat(totalObj));
   }));
 
   // Error Handlers
@@ -276,9 +301,9 @@ function MonitorApp ({
   return app;
 }
 
-// 
+//
 // Middleware
-// 
+//
 
 function ipAuthMiddleware (exitnodeIPs) {
   return (req, res, next) => {
@@ -295,7 +320,7 @@ function ipAuthMiddleware (exitnodeIPs) {
 
 /**
  * wrap a function that returns promise and return an express middleware
- * @param {Function} fn - A function that accepts (req, res, next) and returns promise 
+ * @param {Function} fn - A function that accepts (req, res, next) and returns promise
  * @returns {Function} an express middleware (request handler)
  */
 function asyncMiddleware (fn) { return (req, res, next) => {
