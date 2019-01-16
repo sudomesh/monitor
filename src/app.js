@@ -269,7 +269,12 @@ function MonitorApp ({
     }, {});
 
     // Strip out routeLogs which was only used for aggregating unique totals:
-    let { routeLogs, ...totalObj } = totals;
+    let totalObj = {
+      exitnodeIP: totals.exitnodeIP,
+      timestamps: totals.timestamps,
+      gatewayCounts: totals.gatewayCounts,
+      nodeCounts: totals.nodeCounts
+    };
 
     exitnodes = exitnodes.map((exitnode) => {
       return {
