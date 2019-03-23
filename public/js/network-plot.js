@@ -71,6 +71,7 @@
       .attr('class', 'exitnode-label')
       .text((node) => node.ip)
       .style('font-family', 'monospace')
+      .style('color', (node) => exitnodeUtils.exitnodeColor(node.ip))
       .style('position', 'absolute')
       .style('text-align', 'center')
       .style('transform', 'translate(-50%, -100%)');
@@ -113,7 +114,12 @@
     newNodeEls.append('circle')
       .attr('class', 'inner-circle')
       .attr('r', 5)
-      .attr('fill', 'black');
+      .attr('fill', (node) => {
+        if (node.type === 'exitnode')
+          return exitnodeUtils.exitnodeColor(node.ip);
+        else
+          return 'black';
+      });
 
     newNodeEls.on('mouseover', function(node) {
       d3.select(this).select('.outer-circle')

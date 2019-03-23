@@ -60,16 +60,6 @@
         .attr('text-anchor', 'middle')
         .text('# nodes');
 
-    // Associate exitnode IPs with specific colors. It's confusing if every time you load
-    // the UI, a different color is used for each exitnode.
-    let colors = {
-      '64.71.176.94': '#F2813F',
-      '45.34.140.42': '#b85bdc',
-      '107.170.219.5': '#3eb2f3',
-      '208.70.31.83': '#7FDB5A'
-    };
-    // Use backup colors for exitnodes we don't know about ahead of time.
-    let otherColors = ['#adadad', 'black'];
     exitnodes.forEach((exitnode, idx) => {
       let nodeData = _.zip(exitnode.timestamps, exitnode.nodeCounts).map((el) => {
         return {
@@ -85,9 +75,7 @@
         };
       });
 
-      let exitnodeColor = colors[exitnode.exitnodeIP];
-      if (!exitnodeColor)
-        exitnodeColor = otherColors[idx % otherColors.length];
+      let exitnodeColor = exitnodeUtils.exitnodeColor(exitnode.exitnodeIP);
 
       mainGroup.append('path')
         .datum(nodeData)
