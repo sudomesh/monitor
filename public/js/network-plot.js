@@ -60,22 +60,31 @@
     //
 
     let exitnodeLabelGroup = htmlContainer.append('div')
-      .attr('class', 'exitnode-labels')
+      .attr('class', 'exitnode-label-container')
       .style('position', 'absolute')
       .style('top', '0px');
 
-    exitnodeLabelGroup.selectAll('.exitnode-label')
+    let exitnodeLabel = exitnodeLabelGroup.selectAll('.exitnode-label')
       .data(nodes.filter((n) => n.type === 'exitnode'))
       .enter()
       .append('div')
       .attr('class', 'exitnode-label')
-      .text((node) => node.ip)
       .style('font-family', 'monospace')
       .style('color', (node) => exitnodeUtils.exitnodeColor(node.ip))
       .style('position', 'absolute')
+      .style('top', `${svgHeight}px`)
       .style('text-align', 'center')
+      .style('white-space', 'nowrap')
       .style('transform', 'translate(-50%, -100%)');
+      
+    exitnodeLabel
+      .append('div')
+      .text((node) => node.ip);
 
+    exitnodeLabel
+      .append('div')
+      .text((node) => exitnodeUtils.exitnodeLabel(node.ip));
+    
     //
     // Render links
     //
@@ -151,8 +160,7 @@
 
       exitnodeLabelGroup.selectAll('.exitnode-label')
         .data(nodes.filter((node) => node.type === 'exitnode'))
-        .style('left', (node) => `${node.x}px`)
-        .style('top', `${svgHeight}px`);
+        .style('left', (node) => `${node.x}px`);
     });
   }
 
