@@ -13,7 +13,8 @@
   function init() {
     fetch('/api/v0/numNodesTimeseries')
       .then((response) => response.json())
-      .then((exitnodes) => render(exitnodes));
+      .then((exitnodes) => render(exitnodes))
+      .catch((error) => console.error(error));
   }
 
   function render(exitnodes) {

@@ -12,7 +12,8 @@
     fetch('/api/v0/nodes')
       .then((response) => response.json())
       .then((routeTables) => routesToLinksAndNodes(routeTables))
-      .then(({ links, nodes }) => render(links, nodes));
+      .then(({ links, nodes }) => render(links, nodes))
+      .catch((error) => console.error(error));
   }
 
   function render(links, nodes) {
