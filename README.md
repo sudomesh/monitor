@@ -65,13 +65,27 @@ mongod --dbpath=data
 node setup-db.py
 ```
 
-#### 7. launch the app locally using `npm start`
+#### 7. launch the app
+
+```
+npm start
+```
 
 Check whether your app launched properly by going to http://localhost:3000 in your favorite browser.
 
-By default, you should see a notification that the exit node is down. To simulate exit node activity, open a commandline in the monitor directory and execute `nodejs ./simulate-activity.js`. This script sets a key-value pair on memcache in such a way that the monitor page gets all like "hey, this exit node is alive!"
+#### 8. simulate exitnodes phoning home
+
+By default, you should see a notification that all exit nodes are down. To simulate exit nodes phoning home about their routing tables, open a commandline in the monitor directory and execute:
+
+```
+node tools/simulate-activity.js
+```
+
+This script sets a key-value pair on memcache in such a way that the monitor page gets all like "hey, this exit node is alive!"
 
 After running this, reload your local monitor page and the page should indicate that the exit monitor is up. After 2 minutes, this is no longer the case, because the activity metrics expire.
+
+#### how to wipe mongodb
 
 If you ever need to wipe your mongo database of simulated activity, kill `mongod` with `ctrl+c`, make a fresh data directory, then restart `mongod`:
 
@@ -80,8 +94,6 @@ rm -r data
 mkdir data
 mongod --dbpath=data
 ```
-
-For information about memcached, see https://devcenter.heroku.com/articles/memcachier#local-usage .
 
 ## Running tests
 
