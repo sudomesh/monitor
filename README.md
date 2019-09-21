@@ -52,11 +52,12 @@ memcached -v
 
 #### 5. start mongodb
 
+Create a folder in `monitor` called `data` where mongo writes all of its database files, then start up the mongodb server:
+
 ```
+mkdir data
 mongod --dbpath=data
 ```
-
-This will create a folder in `monitor` called `data` where mongo writes all of its database files.
 
 #### 6. setup mongodb
 
@@ -72,8 +73,15 @@ By default, you should see a notification that the exit node is down. To simulat
 
 After running this, reload your local monitor page and the page should indicate that the exit monitor is up. After 2 minutes, this is no longer the case, because the activity metrics expire.
 
+If you ever need to wipe your mongo database of simulated activity, kill `mongod` with `ctrl+c`, make a fresh data directory, then restart `mongod`:
 
-For more information, see https://devcenter.heroku.com/articles/memcachier#local-usage .
+```
+rm -r data
+mkdir data
+mongod --dbpath=data
+```
+
+For information about memcached, see https://devcenter.heroku.com/articles/memcachier#local-usage .
 
 ## Running tests
 
