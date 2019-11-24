@@ -16,13 +16,25 @@ if (require.main === module) {
 }
 
 async function main() {
-  return Promise.all([
-    simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 21 }, exitnodeIPs[0]),
-    simulateMonitorRequest({ "numberOfGateways": 15, "numberOfRoutes": 29 }, exitnodeIPs[1]),
-    simulateRoutingTableRequest('129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|', exitnodeIPs[0]),
-    simulateRoutingTableRequest('122.0.0.0/26,129.0.0.1|125.0.0.0/26,124.0.0.1|121.0.0.0/26,121.0.0.1|', exitnodeIPs[1]),
+  await Promise.all([
+    simulateMonitorRequest({"numberOfGateways": 15, "numberOfRoutes": 21}, exitnodeIPs[0]),
+    simulateMonitorRequest({"numberOfGateways": 15, "numberOfRoutes": 29}, exitnodeIPs[1]),
+    simulateRoutingTableRequest('134.0.0.0/26,134.0.0.1|132.0.0.0/26,132.0.0.1|131.0.0.0/26,131.0.0.1|129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|', exitnodeIPs[0]),
+    simulateRoutingTableRequest('134.0.0.0/26,134.0.0.1|132.0.0.0/26,132.0.0.1|131.0.0.0/26,131.0.0.1|125.0.0.0/26,124.0.0.1|121.0.0.0/26,121.0.0.1|123.0.0.0/26,123.0.0.1', exitnodeIPs[1]),
     simulateRoutingTableRequest('', exitnodeIPs[2]) // simulate an empty POST
   ])
+  return new Promise(resolve => {
+    setTimeout(async () => {
+      // omit one routing table request to simulate a delay between posts
+      await Promise.all([
+        simulateMonitorRequest({"numberOfGateways": 15, "numberOfRoutes": 21}, exitnodeIPs[0]),
+        simulateMonitorRequest({"numberOfGateways": 15, "numberOfRoutes": 29}, exitnodeIPs[1]),
+        simulateRoutingTableRequest('134.0.0.0/26,134.0.0.1|132.0.0.0/26,132.0.0.1|131.0.0.0/26,131.0.0.1|129.0.0.0/26,129.0.0.1|127.0.0.0/26,127.0.0.1|128.0.0.0/26,128.0.0.1|127.0.0.10/26,127.0.0.1|', exitnodeIPs[0]),
+        simulateRoutingTableRequest('', exitnodeIPs[2]) // simulate an empty POST
+      ])
+      resolve()
+    }, 1000)
+  })
 }
 
 async function simulateMonitorRequest(data, exitnodeIP) {
@@ -52,7 +64,7 @@ async function monitorRequest(data, exitnodeIP) {
       if (error) return reject(error)
       return resolve(response)
     })
-  })  
+  })
 }
 
 async function simulateRoutingTableRequest(body, exitnodeIP) {
@@ -82,3 +94,4 @@ async function routingTableRequest(body, exitnodeIP) {
     })
   })
 }
+
