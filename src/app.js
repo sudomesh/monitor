@@ -259,8 +259,56 @@ function MonitorApp ({
         })
       }
     });
-    
-    res.json(exitnodes);
+
+    // Calculate the total number of unique nodes and gateways between all exitnodes
+    const intervalMinutes = 5;
+    const totals = await db.collection('routeLog')
+      .aggregate([
+        {
+          '$match': {
+            'timestamp': {
+              '$lt': toDate,
+              '$gte': fromDate
+            }
+          }
+        },
+        { $unwind: '$routes' },
+        {
+          // Group route logs into intervals of <intervalMinutes>
+          $group: {
+            _id: {
+              year: { $year: '$timestamp' },
+              day: { $dayOfYear: '$timestamp' },
+              hour: { $hour: '$timestamp' },
+              interval: {
+                $subtract: [
+                  { $minute: '$timestamp' },
+                  { $mod: [{ $minute: '$timestamp' }, intervalMinutes ] }
+                ]
+              }
+            },
+            timestamp: { $max: '$timestamp' },
+            nodeIPs: { $addToSet: '$routes.nodeIP' },
+            gatewayIPs: { $addToSet: '$routes.gatewayIP' }
+          }
+        },
+        // Sort in time ascending order
+        { $sort: { _id: 1 } },
+        {
+          // Collapse into a single document
+          // Get counts of nodes/gateways
+          $group: {
+            _id: null,
+            timestamps: { $push: '$timestamp' },
+            nodeCounts : { $push: { $size: '$nodeIPs' } },
+            gatewayCounts : { $push: { $size: '$gatewayIPs' } }
+          }
+        },
+        { $set: { exitnodeIP: 'total nodes' } }
+      ])
+      .toArray()
+
+    res.json([...exitnodes, ...totals]);
   }));
 
   // Error Handlers
