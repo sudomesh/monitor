@@ -248,7 +248,7 @@ function MonitorApp ({
 
     exitnodes = exitnodes.map((exitnode) => {
       return {
-        exitnodeIP: exitnode._id,
+        label: exitnode._id,
         timestamps: exitnode.timestamps,
         // convert logs of route tables to counts of nodes/gateways
         gatewayCounts: exitnode.routeLogs.map((routeLog) => {
@@ -303,11 +303,11 @@ function MonitorApp ({
             nodeCounts : { $push: { $size: '$nodeIPs' } },
             gatewayCounts : { $push: { $size: '$gatewayIPs' } }
           }
-        },
-        { $set: { exitnodeIP: 'total nodes' } }
+        }
       ])
-      .toArray()
+      .toArray();
 
+    totals[0].label = 'total nodes';
     res.json([...exitnodes, ...totals]);
   }));
 

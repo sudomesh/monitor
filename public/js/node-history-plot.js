@@ -13,27 +13,27 @@
   function init() {
     fetch('/api/v0/numNodesTimeseries')
       .then((response) => response.json())
-      .then((exitnodes) => render(exitnodes))
+      .then((timeseries) => render(timeseries))
       .catch((error) => console.error(error));
   }
 
-  function render(exitnodes) {
+  function render(timeseries) {
     // debug
-    window.exitnodes = exitnodes;
-    console.debug(exitnodes);
+    window.timeseries = timeseries;
+    console.debug(timeseries);
 
     // convert all timestamp strings to Date objects
-    for (let exitnode of exitnodes) {
-      exitnode.timestamps = exitnode.timestamps.map((t) => new Date(t));
+    for (let ts of timeseries) {
+      ts.timestamps = ts.timestamps.map((t) => new Date(t));
     }
     
     let xScale = window.xScale = d3.scaleTime()
-      .domain(d3.extent(_.flatten(_.pluck(exitnodes, 'timestamps'))))
+      .domain(d3.extent(_.flatten(_.pluck(timeseries, 'timestamps'))))
       .range([0, plotWidth]);
     let yScale = window.yScale = d3.scaleLinear()
       .domain([0, d3.max(Array.prototype.concat(
-        _.flatten(_.pluck(exitnodes, 'gatewayCounts')),
-        _.flatten(_.pluck(exitnodes, 'nodeCounts'))
+        _.flatten(_.pluck(timeseries, 'gatewayCounts')),
+        _.flatten(_.pluck(timeseries, 'nodeCounts'))
       ))])
       .range([plotHeight, 0]);
     let mainGroup = svg.append('g')
@@ -60,40 +60,41 @@
         .attr('text-anchor', 'middle')
         .text('# nodes');
 
-    exitnodes.forEach((exitnode, idx) => {
-      let nodeData = _.zip(exitnode.timestamps, exitnode.nodeCounts).map((el) => {
+    // render node counts at each exitnode
+    timeseries.forEach((ts, idx) => {
+      let nodeData = _.zip(ts.timestamps, ts.nodeCounts).map((el) => {
         return {
           timestamp: el[0],
           value: el[1]
         };
       });
 
-      let gatewayData = _.zip(exitnode.timestamps, exitnode.gatewayCounts).map((el) => {
+      let gatewayData = _.zip(ts.timestamps, ts.gatewayCounts).map((el) => {
         return {
           timestamp: el[0],
           value: el[1]
         };
       });
 
-      let exitnodeColor = exitnodeUtils.exitnodeColor(exitnode.exitnodeIP);
+      let tsColor = exitnodeUtils.exitnodeColor(ts.label);
 
       mainGroup.append('path')
         .datum(nodeData)
         .attr('fill', 'none')
-        .attr('stroke', exitnodeColor)
+        .attr('stroke', tsColor)
         .attr('stroke-width', 1.5)
         .attr('d', line);
 
       mainGroup.append('text')
-        .text(exitnode.exitnodeIP)
+        .text(ts.label)
         .attr('x', 20 + idx * 130)
         .attr('y', -20)
-        .attr('fill', exitnodeColor);
+        .attr('fill', tsColor);
 
       mainGroup.append('rect')
         .attr('width', 10)
         .attr('height', 10)
-        .attr('fill', exitnodeColor)
+        .attr('fill', tsColor)
         .attr('x', idx * 130)
         .attr('y', -30);
 
@@ -101,7 +102,7 @@
       // mainGroup.append('path')
       //   .datum(gatewayData)
       //   .attr('fill', 'none')
-      //   .attr('stroke', exitnodeColor)
+      //   .attr('stroke', timeseriesColor)
       //   .attr('stroke-width', 1.5)
       //   .attr('stroke-dasharray', '5, 10, 5')
       //   .attr('d', line);
