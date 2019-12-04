@@ -62,7 +62,7 @@ mongod --dbpath=data
 #### 6. setup mongodb
 
 ```
-node setup-db.py
+node tools/setup-db.py
 ```
 
 #### 7. launch the app
