@@ -277,9 +277,12 @@ function MonitorApp ({
           // Group route logs into intervals of <intervalMinutes>
           $group: {
             _id: {
+              // Only group together logs that share the same, year, day, hour, and interval
               year: { $year: '$timestamp' },
               day: { $dayOfYear: '$timestamp' },
               hour: { $hour: '$timestamp' },
+              // <interval> is labeled with the low-end of the interval.
+              // E.g. minute 31 and 34 are in interval 30. Minute 37 is in interval 35.
               interval: {
                 $subtract: [
                   { $minute: '$timestamp' },
@@ -292,7 +295,7 @@ function MonitorApp ({
             gatewayIPs: { $addToSet: '$routes.gatewayIP' }
           }
         },
-        // Sort in time ascending order
+        // Sort by all _id fields in time ascending order
         { $sort: { _id: 1 } },
         {
           // Collapse into a single document
