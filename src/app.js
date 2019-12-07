@@ -56,11 +56,44 @@ function MonitorApp ({
   }
 
   async function getMonitorUpdates() {
-    return await Promise.all(exitnodeIPs.map(async ip => {
-      let d = await getCacheData(`alive-${ip}`);
-      d = d ? d : { error: util.noCheckInMessage(ip) };
-      d.ip = ip;
-      return d;
+    // Report a count of unique nodes and gateways connected to exitnodes
+    // If an exitnode has not checked in in the last two minutes, report an error message
+    const getExitnodeStats = function (exitnodeIP) {
+      return db.collection('routeLog')
+        .aggregate([
+          {
+            // Get route logs posted in the last two minutes
+            $match: {
+              exitnodeIP,
+              timestamp: { $gt: new Date(new Date() - 2 * 60 * 1000) },
+            },
+          },
+          { $sort: { timestamp: -1 } },
+          // Select only the most recent log
+          { $limit: 1 } ,
+          { $unwind: '$routes' },
+          {
+            $group: {
+              _id: '$exitnodeIP',
+              nodeIPs: { $addToSet: '$routes.nodeIP' },
+              gatewayIPs: { $addToSet: '$routes.gatewayIP' }
+            }
+          },
+          {
+            $project: {
+              ip: exitnodeIP,
+              numberOfRoutes: { $size: '$nodeIPs' },
+              numberOfGateways: { $size: '$gatewayIPs' },
+              _id: false,
+            }
+          }
+        ])
+        .toArray();
+    };
+
+    return Promise.all(exitnodeIPs.map(async ip => {
+      const [stats] = await getExitnodeStats(ip);
+      return stats  || { error: util.noCheckInMessage(ip) };
     }));
   }
 
