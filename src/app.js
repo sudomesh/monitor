@@ -152,23 +152,6 @@ function MonitorApp ({
     res.json(await getMonitorUpdates());
   }));
 
-  app.post('/api/v0/monitor', ipAuthMiddleware(exitnodeIPs), function(req, res) {
-    let ip = util.getRequestIP(req);
-    const key = `alive-${ip}`;
-    let handleErr = function(err) {
-      if (err) {
-        return res.status(502).json({ error: 'Could not set key, because of [' + err + '].' });
-      }
-      return res.json({ message: 'Set attached values', result: processed });
-    };
-    const processed = util.processUpdate(req);
-    if (processed.error) {
-      return res.status(400).json(processed);
-    } else {
-      mjs.set(key, JSON.stringify(processed), {expires: 120}, handleErr);
-    }
-  });
-
   app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
     let data = await getRoutingTableUpdates();
     res.json(data);

@@ -4,7 +4,7 @@
 
 To help monitor network health. 
 
-Exit nodes periodically execute [monitor.sh](./monitor.sh) and [post-routing-table.sh](./post-routing-table.sh), hitting two API endpoints at https://peoplesopen.herokuapp.com/api/v0/. This relays information about the number of active routes, active gateways, and the full contents of the exit node's routing table. If an exit node hasn't checked in in more than 2 minutes, it is assumed to be down.
+Exit nodes periodically execute [post-routing-table.sh](./post-routing-table.sh), hitting an API endpoint at https://peoplesopen.herokuapp.com/api/v0/nodes. This relays information about the number of active routes, active gateways, and the full contents of the exit node's routing table. If an exit node hasn't checked in in more than 2 minutes, it is assumed to be down.
 
 Uses memcache/memjs, and mongo db. Deployed to heroku.
 
