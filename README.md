@@ -63,6 +63,7 @@ mongod --dbpath=data
 
 ```
 node tools/setup-db.js
+```
 
 #### 7. launch the app
 
