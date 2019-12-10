@@ -62,7 +62,7 @@ mongod --dbpath=data
 #### 6. setup mongodb
 
 ```
-node tools/setup-db.py
+node tools/setup-db.js
 ```
 
 #### 7. launch the app
@@ -129,7 +129,7 @@ $ heroku --version
 heroku-cli/6.11.17 (linux-x64) node-v7.10.0
 ```
 
-To push to current production server, get access push access and add the following to .git/config:
+To push to current production server, get push access and add the following to .git/config:
 
 ```
 [remote "heroku"]
