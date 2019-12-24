@@ -55,45 +55,28 @@ function MonitorApp ({
     return JSON.parse(value);
   }
 
-  async function getMonitorUpdates() {
+  function countActiveRoutesByExitnode() {
     // Report a count of unique nodes and gateways connected to exitnodes
     // If an exitnode has not checked in in the last two minutes, report an error message
-    const getExitnodeStats = function (exitnodeIP) {
-      return db.collection('routeLog')
-        .aggregate([
-          {
-            // Get route logs posted in the last two minutes
-            $match: {
-              exitnodeIP,
-              timestamp: { $gt: new Date(new Date() - 2 * 60 * 1000) },
-            },
-          },
-          { $sort: { timestamp: -1 } },
-          // Select only the most recent log
-          { $limit: 1 } ,
-          { $unwind: '$routes' },
-          {
-            $group: {
-              _id: '$exitnodeIP',
-              nodeIPs: { $addToSet: '$routes.nodeIP' },
-              gatewayIPs: { $addToSet: '$routes.gatewayIP' }
-            }
-          },
-          {
-            $project: {
-              ip: exitnodeIP,
-              numberOfRoutes: { $size: '$nodeIPs' },
-              numberOfGateways: { $size: '$gatewayIPs' },
-              _id: false,
-            }
-          }
-        ])
-        .toArray();
-    };
-
     return Promise.all(exitnodeIPs.map(async ip => {
-      const [stats] = await getExitnodeStats(ip);
-      return stats  || { error: util.noCheckInMessage(ip) };
+      const twoMinutesAgo = new Date(new Date() - 2 * 60 * 1000); 
+      const [mostRecentLog] = await db.collection('routeLog')
+        .find({ 
+          exitnodeIP: ip, 
+          timestamp: { $gt: twoMinutesAgo }
+        })
+        .sort({ timestamp: -1 })
+        .limit(1)
+        .toArray();
+
+      if (!mostRecentLog) 
+        return { error: util.noCheckInMessage(ip) };
+      
+      return {
+        exitnodeIP: ip,
+        numberOfRoutes: _.unique(mostRecentLog.routes.map(r => r.nodeIP)).length,
+        numberOfGateways: _.unique(mostRecentLog.routes.map(r => r.gatewayIP)).length
+      };
     }));
   }
 
@@ -230,7 +213,7 @@ function MonitorApp ({
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
 
   }));
-
+  
   app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
     let now = new Date();
     let yesterday = new Date(now - 1000 * 60 * 60 * 24);
