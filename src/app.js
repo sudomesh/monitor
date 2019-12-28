@@ -103,8 +103,8 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let updates = await getMonitorUpdates();
-    let exitnodes = await getRoutingTableUpdates();
+    const routeCounts = await countActiveRoutesByExitnode();
+    const exitnodes = await getRoutingTableUpdates();
     
     exitnodes.forEach(exitnode => {
       if (exitnode.routingTable) {
@@ -121,7 +121,7 @@ function MonitorApp ({
     });
 
     res.render('index', {
-      updates: updates,
+      routeCounts, 
       nodes: exitnodes,
       timeAgo: util.timeAgo
     });
@@ -132,7 +132,7 @@ function MonitorApp ({
   // 
 
   app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
-    res.json(await getMonitorUpdates());
+    res.json(await countActiveRoutesByExitnode());
   }));
 
   app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
