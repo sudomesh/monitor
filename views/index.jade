@@ -6,11 +6,11 @@ block content
   p Please help make this page better at 
     a(href='https://github.com/sudomesh/monitor') https://github.com/sudomesh/monitor.
   
-  each update in updates
-    if update.error
-      p.monitor-warning #{update.error}
+  each count in routeCounts
+    if count.error
+      p.monitor-warning #{count.error}
     else
-      p #{update.ip} is connecting [#{update.numberOfRoutes}] nodes via [#{update.numberOfGateways}] gateways.
+      p #{count.exitnodeIP} is connecting [#{count.numberOfRoutes}] nodes via [#{count.numberOfGateways}] gateways.
 
   h3="node history"
   p A plot of the number of nodes connected to our exitnodes in the last 24 hours.

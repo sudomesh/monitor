@@ -55,12 +55,28 @@ function MonitorApp ({
     return JSON.parse(value);
   }
 
-  async function getMonitorUpdates() {
-    return await Promise.all(exitnodeIPs.map(async ip => {
-      let d = await getCacheData(`alive-${ip}`);
-      d = d ? d : { error: util.noCheckInMessage(ip) };
-      d.ip = ip;
-      return d;
+  function countActiveRoutesByExitnode() {
+    // Report a count of unique nodes and gateways connected to exitnodes
+    // If an exitnode has not checked in in the last two minutes, report an error message
+    return Promise.all(exitnodeIPs.map(async ip => {
+      const twoMinutesAgo = new Date(new Date() - 2 * 60 * 1000); 
+      const [mostRecentLog] = await db.collection('routeLog')
+        .find({ 
+          exitnodeIP: ip, 
+          timestamp: { $gt: twoMinutesAgo }
+        })
+        .sort({ timestamp: -1 })
+        .limit(1)
+        .toArray();
+
+      if (!mostRecentLog) 
+        return { error: util.noCheckInMessage(ip) };
+      
+      return {
+        exitnodeIP: ip,
+        numberOfRoutes: _.unique(mostRecentLog.routes.map(r => r.nodeIP)).length,
+        numberOfGateways: _.unique(mostRecentLog.routes.map(r => r.gatewayIP)).length
+      };
     }));
   }
 
@@ -87,8 +103,8 @@ function MonitorApp ({
 
   // Home Page
   app.get('/', asyncMiddleware(async function(req, res, next) {
-    let updates = await getMonitorUpdates();
-    let exitnodes = await getRoutingTableUpdates();
+    const routeCounts = await countActiveRoutesByExitnode();
+    const exitnodes = await getRoutingTableUpdates();
     
     exitnodes.forEach(exitnode => {
       if (exitnode.routingTable) {
@@ -105,7 +121,7 @@ function MonitorApp ({
     });
 
     res.render('index', {
-      updates: updates,
+      routeCounts, 
       nodes: exitnodes,
       timeAgo: util.timeAgo
     });
@@ -116,25 +132,8 @@ function MonitorApp ({
   // 
 
   app.get('/api/v0/monitor', asyncMiddleware(async function(req, res, next) {
-    res.json(await getMonitorUpdates());
+    res.json(await countActiveRoutesByExitnode());
   }));
-
-  app.post('/api/v0/monitor', ipAuthMiddleware(exitnodeIPs), function(req, res) {
-    let ip = util.getRequestIP(req);
-    const key = `alive-${ip}`;
-    let handleErr = function(err) {
-      if (err) {
-        return res.status(502).json({ error: 'Could not set key, because of [' + err + '].' });
-      }
-      return res.json({ message: 'Set attached values', result: processed });
-    };
-    const processed = util.processUpdate(req);
-    if (processed.error) {
-      return res.status(400).json(processed);
-    } else {
-      mjs.set(key, JSON.stringify(processed), {expires: 120}, handleErr);
-    }
-  });
 
   app.get('/api/v0/nodes', asyncMiddleware(async function(req, res) {
     let data = await getRoutingTableUpdates();
@@ -214,7 +213,7 @@ function MonitorApp ({
     mjs.set(key, JSON.stringify(newRoutes), {}, handleErr);
 
   }));
-
+  
   app.get('/api/v0/numNodesTimeseries', asyncMiddleware(async function(req, res) {
     let now = new Date();
     let yesterday = new Date(now - 1000 * 60 * 60 * 24);
