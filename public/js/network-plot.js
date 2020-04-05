@@ -175,17 +175,13 @@
 
     function showConnectedLinksAndNodes(node) {
       let { connectedNodes, connectedLinks } = getConnectedLinksAndNodes(node);
-      nodeGroup.selectAll('.node-container').data(nodes)
-        .style('opacity', (d) => connectedNodes.includes(d) ? 1 : 0.2);
-      linkGroup.selectAll('.link').data(links)
-        .style('opacity', (d) => connectedLinks.includes(d) ? 1 : 0.2);
+      newNodeEls.style('opacity', (d) => connectedNodes.includes(d) ? 1 : 0.2);
+      newLinkEls.style('opacity', (d) => connectedLinks.includes(d) ? 1 : 0.2);
     }
 
     function clearConnectedLinksAndNodes() {
-      nodeGroup.selectAll('.node-container').data(nodes)
-        .style('opacity', 1);
-      linkGroup.selectAll('.link').data(links)
-        .style('opacity', 1);
+      newNodeEls.style('opacity', 1);
+      newLinkEls.style('opacity', 1);
     }
   }
 
