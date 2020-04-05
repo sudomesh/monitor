@@ -3,7 +3,7 @@
   let svgWidth = svg.node().getBoundingClientRect().width,
       svgHeight = svg.node().getBoundingClientRect().height;
   let htmlContainer = d3.select('#network-plot-html');
-  
+
   init();
 
   function init() {
@@ -22,7 +22,7 @@
     simulation
       .force('link', d3.forceLink(links).id((d) => d.ip))
       .force('charge', d3.forceManyBody().distanceMax(150));
-    
+
     //
     // Hover tooltip
     //
@@ -34,7 +34,7 @@
       .style('position', 'absolute')
       .style('top', '0px')
       .style('display', 'none');
-    
+
     let tooltipText = tooltipGroup.append('div')
       .attr('class', 'tooltip-text')
       .style('margin-left', '15px')
@@ -76,7 +76,7 @@
       .style('text-align', 'center')
       .style('white-space', 'nowrap')
       .style('transform', 'translate(-50%, -100%)');
-      
+
     exitnodeLabel
       .append('div')
       .text((node) => node.ip);
@@ -84,7 +84,7 @@
     exitnodeLabel
       .append('div')
       .text((node) => exitnodeUtils.exitnodeLabel(node.ip));
-    
+
     //
     // Render links
     //
@@ -154,7 +154,7 @@
         .attr('y1', (link) => link.source.y)
         .attr('x2', (link) => link.target.x)
         .attr('y2', (link) => link.target.y);
-      
+
       let nodeEls = nodeGroup.selectAll('.node-container').data(nodes);
       nodeEls.attr('transform', (node) => `translate(${node.x} ${node.y})`);
 
@@ -167,7 +167,7 @@
   function routesToLinksAndNodes(routeTables) {
     // for debugging
     window.routeTables = routeTables;
-    
+
     // Filter out routes that we haven't seen in the last X minutes
     let now = new Date();
     for (let table of routeTables) {
