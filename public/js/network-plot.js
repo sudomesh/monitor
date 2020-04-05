@@ -130,20 +130,43 @@
           return 'black';
       });
 
-    newNodeEls.on('mouseover', function(node) {
-      d3.select(this).select('.outer-circle')
+    //
+    // Mouse events
+    //
+
+    // Select the closest node to the mouse closer than closenessThreshold
+    svg.node().addEventListener('mousemove', (e) => {
+      let closenessThreshold = 15;
+      let svgOffsetX = svg.node().getBoundingClientRect().x;
+      let svgOffsetY = svg.node().getBoundingClientRect().y;
+      let x = e.clientX - svgOffsetX;
+      let y = e.clientY - svgOffsetY;
+      let nodeDistances = nodes.map((d) => Math.pow(d.x - x, 2) + Math.pow(d.y - y, 2));
+      let closestDistance = d3.min(nodeDistances);
+      let closestNode = nodes[nodeDistances.indexOf(closestDistance)];
+      if (Math.sqrt(Math.pow(closestNode.x - x, 2) + Math.pow(closestNode.y - y, 2)) < closenessThreshold) {
+        selectNode(closestNode);
+      } else {
+        clearSelectedNode();
+      }
+    });
+
+    function selectNode(node) {
+      newNodeEls
+        .filter((d) => d === node)
+        .select('.outer-circle')
         .attr('stroke', 'black');
       showTooltip(node);
       showConnectedLinksAndNodes(node);
-    });
+    }
 
-    newNodeEls.on('mouseout', function(node) {
-      d3.select(this).select('.outer-circle')
+    function clearSelectedNode() {
+      newNodeEls
+        .select('.outer-circle')
         .attr('stroke', 'none');
       hideTooltip();
       clearConnectedLinksAndNodes();
-    });
-
+    }
 
     //
     // Update svg element positions
