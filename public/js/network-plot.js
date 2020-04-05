@@ -134,12 +134,14 @@
       d3.select(this).select('.outer-circle')
         .attr('stroke', 'black');
       showTooltip(node);
+      showConnectedLinksAndNodes(node);
     });
 
     newNodeEls.on('mouseout', function(node) {
       d3.select(this).select('.outer-circle')
         .attr('stroke', 'none');
       hideTooltip();
+      clearConnectedLinksAndNodes();
     });
 
 
@@ -162,6 +164,29 @@
         .data(nodes.filter((node) => node.type === 'exitnode'))
         .style('left', (node) => `${node.x}px`);
     });
+
+    function getConnectedLinksAndNodes(node) {
+      // Returns all nodes that are one hop away (and the corresponding links)
+      let connectedLinks = links.filter((l) => l.source.ip === node.ip || l.target.ip === node.ip);
+      let connectedNodes = connectedLinks.map((l) => l.source.ip === node.ip ? l.target : l.source);
+      connectedNodes.push(node);
+      return { connectedNodes, connectedLinks };
+    }
+
+    function showConnectedLinksAndNodes(node) {
+      let { connectedNodes, connectedLinks } = getConnectedLinksAndNodes(node);
+      nodeGroup.selectAll('.node-container').data(nodes)
+        .style('opacity', (d) => connectedNodes.includes(d) ? 1 : 0.2);
+      linkGroup.selectAll('.link').data(links)
+        .style('opacity', (d) => connectedLinks.includes(d) ? 1 : 0.2);
+    }
+
+    function clearConnectedLinksAndNodes() {
+      nodeGroup.selectAll('.node-container').data(nodes)
+        .style('opacity', 1);
+      linkGroup.selectAll('.link').data(links)
+        .style('opacity', 1);
+    }
   }
 
   function routesToLinksAndNodes(routeTables) {
