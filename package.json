@@ -23,7 +23,7 @@
     "jade": "~1.11.0",
     "less-middleware": "0.1.15",
     "memjs": "1.1.0",
-    "mongodb": "3.1.4",
+    "mongodb": "3.1.13",
     "morgan": "~1.0.0",
     "underscore": "1.9.1",
     "winston": "0.7.3"
