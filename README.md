@@ -4,7 +4,12 @@
 
 To help monitor network health. 
 
-Exit nodes periodically execute [post-routing-table.sh](./post-routing-table.sh), hitting an API endpoint at https://peoplesopen.herokuapp.com/api/v0/nodes. This relays information about the number of active routes, active gateways, and the full contents of the exit node's routing table. If an exit node hasn't checked in in more than 2 minutes, it is assumed to be down.
+## Exit Nodes
+Exit nodes periodically execute [post-routing-table.sh](./post-routing-table.sh), hitting an API endpoint at https://peoplesopen.herokuapp.com/api/v0/nodes. This relays information about the number of active routes, active gateways, and the full contents of the exit node's routing table. If an exit node hasn't checked in in more than 2 minutes, it is assumed to be down.  
+
+### Exit Node:
+[![](https://mermaid.ink/img/pako:eNptkjFPwzAQhf-KdXM7xNkyIOWOCiEhBhgYMIOpDY0gSWUcQVX1v3NO4RpL9mLrvXf-pKc7wnZ0Hhp4D3a_U3cPZlB8nvzrs4HbIfrATwMvZ3nz00XW06XueU6MGxt9y066v-1BteKkWFuxlR6qrXJDi6FzoxajziC4gGA2ggLBHIICwRyCAsEcQgsIZSMkEMohJBDKISQQukC4U7VeX819XpqdpbnJRamzeC6xqOqiWhd-xUWLksSqqOqiWvqVFrVJkqqiqotqDSvofeht53gPjyljIO58z-vV8NPZ8GHADCfOTXvHwxvXxTFA82Y_v_wK7BTHx8OwhSaGyf-HrjvLO93_pU6_Vc7Y1Q)](https://mermaid.live/edit#pako:eNptkjFPwzAQhf-KdXM7xNkyIOWOCiEhBhgYMIOpDY0gSWUcQVX1v3NO4RpL9mLrvXf-pKc7wnZ0Hhp4D3a_U3cPZlB8nvzrs4HbIfrATwMvZ3nz00XW06XueU6MGxt9y066v-1BteKkWFuxlR6qrXJDi6FzoxajziC4gGA2ggLBHIICwRyCAsEcQgsIZSMkEMohJBDKISQQukC4U7VeX819XpqdpbnJRamzeC6xqOqiWhd-xUWLksSqqOqiWvqVFrVJkqqiqotqDSvofeht53gPjyljIO58z-vV8NPZ8GHADCfOTXvHwxvXxTFA82Y_v_wK7BTHx8OwhSaGyf-HrjvLO93_pU6_Vc7Y1Q)
+
 
 Uses memcache/memjs, and mongo db. Deployed to heroku.
 
